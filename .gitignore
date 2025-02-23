@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.env 

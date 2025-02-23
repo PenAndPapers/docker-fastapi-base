@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+redis
+pytest
+httpx
+pydantic-settings
+ruff
+black
+alembic
+pytest-cov
+pytest-watch 
