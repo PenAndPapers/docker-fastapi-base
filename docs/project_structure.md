@@ -24,13 +24,6 @@ This project follows a modular, clean architecture pattern with clear separation
 │   │     ├── constants/                # Constants for the todo module
 │   │     │   └── enums.py
 │   │     │
-│   │     ├── controller/               # Orchestrates request flow:
-│   │     │   └── TodoController.py     #  - Handles request/response processing
-│   │     │                             #  - Coordinates between services
-│   │     │                             #  - Implements API-specific logic
-│   │     │                             #  - Manages data transformation
-│   │     │                             #  - Validates and sanitizes inputs
-│   │     │
 │   │     ├── model/                    # Database models/entities, defines table structure
 │   │     │   └── TodoModel.py
 │   │     │
@@ -96,13 +89,6 @@ This project follows a modular, clean architecture pattern with clear separation
 ```
 
 ## Component Responsibilities
-
-### Controllers (`controller/`)
-- Handle HTTP request/response logic
-- Transform API inputs to service inputs
-- Handle response formatting
-- Manage API-specific logic
-- Example: `TodoController.py` handles todo-related endpoints
 
 ### Models (`model/`)
 - Define database table structures
