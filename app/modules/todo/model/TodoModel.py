@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Enum, DateTime, text
 from app.database import Base
-from ..constants import SeverityEnum, StatusEnum
+from ..constants import TodoSeverityEnum, TodoStatusEnum
 
 
 class Todo(Base):
@@ -10,14 +10,14 @@ class Todo(Base):
     title = Column(String, nullable=False)
     description = Column(String)
     severity = Column(
-        Enum(SeverityEnum, name="severityenum", create_type=False),
+        Enum(TodoSeverityEnum, name="TodoSeverityEnum", create_type=False),
         nullable=False,
-        server_default=SeverityEnum.LOW.name,
+        server_default=TodoSeverityEnum.LOW.name,
     )
     status = Column(
-        Enum(StatusEnum, name="statusenum", create_type=False),
+        Enum(TodoStatusEnum, name="TodoStatusEnum", create_type=False),
         nullable=False,
-        server_default=StatusEnum.TODO.name,
+        server_default=TodoStatusEnum.TODO.name,
     )
     created_at = Column(
         DateTime(timezone=True),

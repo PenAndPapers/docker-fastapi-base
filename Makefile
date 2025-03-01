@@ -53,12 +53,12 @@ test-watch:
 
 # Code quality commands
 lint:
-	docker-compose exec api ruff check .
-	docker-compose exec api black --check .
+	docker-compose exec api ruff check . --exclude scaffold
+	docker-compose exec api black --check . --exclude scaffold/
 
 format:
-	docker-compose exec -T api ruff check --fix .
-	docker-compose exec -T api black .
+	docker-compose exec -T api ruff check --fix . --exclude scaffold
+	docker-compose exec -T api black . --exclude scaffold/
 
 # Migration commands
 migration:

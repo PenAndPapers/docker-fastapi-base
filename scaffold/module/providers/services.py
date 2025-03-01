@@ -15,9 +15,3 @@ def get_{module}_service(
     policy: {Module}Policy = Depends(),
 ) -> {Module}Service:
     return {Module}Service(repository, policy)
-
-
-def get_{module}_controller(
-    service: {Module}Service = Depends(get_{module}_service),
-) -> {Module}Controller:
-    return {Module}Controller(service)

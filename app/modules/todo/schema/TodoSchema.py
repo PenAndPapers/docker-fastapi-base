@@ -3,30 +3,36 @@ from datetime import datetime
 from enum import Enum
 from app.core import BasePaginationParams
 from ..constants import (
-    SeverityEnum,
-    StatusEnum,
+    TodoSeverityEnum,
+    TodoStatusEnum,
 )
 from ..model import Todo
 
 
-class TodoBase(BaseModel):
+class TodoSchemaBase(BaseModel):
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class TodoBase(TodoSchemaBase):
     title: str = Field(
         ...,
-        min_length=1,
+        min_length=10,
         max_length=200,
-        description="The title of the todo (3-200 characters)",
+        description="The title of the todo (10-200 characters)",
     )
     description: str | None = Field(
         None,
         max_length=500,
         description="The description of the todo (max 500 characters)",
     )
-    severity: SeverityEnum = Field(
-        SeverityEnum.LOW,
+    severity: TodoSeverityEnum = Field(
+        TodoSeverityEnum.LOW,
         description="The severity of the todo",
     )
-    status: StatusEnum = Field(
-        StatusEnum.TODO,
+    status: TodoStatusEnum = Field(
+        TodoStatusEnum.TODO,
         description="The status of the todo",
     )
 
@@ -42,24 +48,13 @@ class TodoCreate(TodoBase):
     pass
 
 
-class TodoUpdate(BaseModel):
-    title: str = Field(
-        ...,
-        min_length=3,
-        max_length=100,
-        description="The title of the todo (3-100 characters)",
-    )
-    description: str | None = Field(
+class TodoUpdate(TodoBase):
+    severity: TodoSeverityEnum | None = Field(
         None,
-        max_length=500,
-        description="The description of the todo (max 500 characters)",
-    )
-    severity: SeverityEnum = Field(
-        SeverityEnum.LOW,
         description="The severity of the todo",
     )
-    status: StatusEnum = Field(
-        StatusEnum.TODO,
+    status: TodoStatusEnum | None = Field(
+        None,
         description="The status of the todo",
     )
 
@@ -68,13 +63,14 @@ class TodoResponse(TodoBase):
     id: int
     title: str
     description: str | None
-    severity: SeverityEnum
-    status: StatusEnum
+    severity: TodoSeverityEnum
+    status: TodoStatusEnum
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class TodoSortFields(str, Enum):
@@ -104,8 +100,10 @@ class TodoPaginationParams(BasePaginationParams):
     sort_by: TodoSortFields = Field(default=TodoSortFields.CREATED_AT)
     title: str | None = None
     description: str | None = None
-    status: StatusEnum | None = None
-    severity: SeverityEnum | None = None
+    status: TodoStatusEnum | None = None
+    severity: TodoSeverityEnum | None = None
 
-    class Config:
-        model = Todo
+    model_config = {
+        "from_attributes": True,
+        "model": Todo
+    }

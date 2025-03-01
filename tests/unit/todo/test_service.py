@@ -1,5 +1,7 @@
-def test_create_todo():
-    # Test the controller's create_todo method
+
+
+def test_create():
+    # Test the service create_todo method
     pass
 
 

@@ -12,7 +12,6 @@ class DatabaseRepository:
         self.db = db
         self.model = model
 
-
     def query(self) -> Query[ModelType]:
         """
         Return a query object for the given model.
@@ -22,7 +21,6 @@ class DatabaseRepository:
             return self.db.query(self.model)
         except Exception as e:
             raise DatabaseError(detail=f"Error querying items: {e}")
-
 
     def get_one(self, id: int) -> ModelType | None:
         """
@@ -36,9 +34,8 @@ class DatabaseRepository:
             raise NotFoundError(
                 detail=f"Item with id {id} not found in {self.model.__name__}"
             )
-        
-        return item
 
+        return item
 
     def create(self, data: SchemaType) -> ModelType:
         """
@@ -59,7 +56,6 @@ class DatabaseRepository:
         except Exception as e:
             self.db.rollback()
             raise DatabaseError(detail=f"Error creating item: {e}")
-
 
     def update(self, id: int, data: SchemaType) -> ModelType:
         """
@@ -84,7 +80,6 @@ class DatabaseRepository:
         except Exception as e:
             self.db.rollback()
             raise DatabaseError(detail=f"Error updating item: {e}")
-
 
     def delete(self, id: int) -> bool:
         """

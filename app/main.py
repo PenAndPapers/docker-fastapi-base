@@ -7,7 +7,13 @@ from app.database import get_db
 from app.core import app_settings
 from app.modules.todo.router import router as todo_router
 
-app = FastAPI()
+
+app = FastAPI(
+    title="FastAPI Base Application",
+    description="FastAPI Base Application",
+    version="1.0.0",
+)
+
 
 """
 Application module routers

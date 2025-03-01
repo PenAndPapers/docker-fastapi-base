@@ -1,60 +1,62 @@
 from typing import Dict, List
 from app.core.exceptions import BadRequestError
-from ..constants import StatusEnum, SeverityEnum
+from ..constants import TodoStatusEnum, TodoSeverityEnum
 
 
 class TodoPolicy:
     def __init__(self):
         # Status transition rules
-        self.allowed_status_transitions: Dict[StatusEnum, List[StatusEnum]] = {
-            StatusEnum.TODO: [
-                StatusEnum.IN_PROGRESS,
-                StatusEnum.DONE,
-                StatusEnum.CANCELLED,
+        self.allowed_status_transitions: Dict[TodoStatusEnum, List[TodoStatusEnum]] = {
+            TodoStatusEnum.TODO: [
+                TodoStatusEnum.IN_PROGRESS,
+                TodoStatusEnum.DONE,
+                TodoStatusEnum.CANCELLED,
             ],
-            StatusEnum.IN_PROGRESS: [
-                StatusEnum.TODO,
-                StatusEnum.DONE,
-                StatusEnum.CANCELLED,
+            TodoStatusEnum.IN_PROGRESS: [
+                TodoStatusEnum.TODO,
+                TodoStatusEnum.DONE,
+                TodoStatusEnum.CANCELLED,
             ],
-            StatusEnum.CANCELLED: [
-                StatusEnum.TODO,
-                StatusEnum.IN_PROGRESS,
-                StatusEnum.DONE,
+            TodoStatusEnum.CANCELLED: [
+                TodoStatusEnum.TODO,
+                TodoStatusEnum.IN_PROGRESS,
+                TodoStatusEnum.DONE,
             ],
-            StatusEnum.DONE: [],  # Cannot transition to any other status
+            TodoStatusEnum.DONE: [],  # Cannot transition to any other status
         }
 
-        self.allowed_severity_transitions: Dict[SeverityEnum, List[SeverityEnum]] = {
-            SeverityEnum.LOW: [
-                SeverityEnum.MEDIUM,
-                SeverityEnum.HIGH,
-                SeverityEnum.CRITICAL,
+        self.allowed_severity_transitions: Dict[
+            TodoSeverityEnum, List[TodoSeverityEnum]
+        ] = {
+            TodoSeverityEnum.LOW: [
+                TodoSeverityEnum.MEDIUM,
+                TodoSeverityEnum.HIGH,
+                TodoSeverityEnum.CRITICAL,
             ],
-            SeverityEnum.MEDIUM: [
-                SeverityEnum.LOW,
-                SeverityEnum.HIGH,
-                SeverityEnum.CRITICAL,
+            TodoSeverityEnum.MEDIUM: [
+                TodoSeverityEnum.LOW,
+                TodoSeverityEnum.HIGH,
+                TodoSeverityEnum.CRITICAL,
             ],
-            SeverityEnum.HIGH: [
-                SeverityEnum.LOW,
-                SeverityEnum.MEDIUM,
-                SeverityEnum.CRITICAL,
+            TodoSeverityEnum.HIGH: [
+                TodoSeverityEnum.LOW,
+                TodoSeverityEnum.MEDIUM,
+                TodoSeverityEnum.CRITICAL,
             ],
-            SeverityEnum.CRITICAL: [
-                SeverityEnum.LOW,
-                SeverityEnum.MEDIUM,
-                SeverityEnum.HIGH,
+            TodoSeverityEnum.CRITICAL: [
+                TodoSeverityEnum.LOW,
+                TodoSeverityEnum.MEDIUM,
+                TodoSeverityEnum.HIGH,
             ],
         }
 
     def validate_status_transition(
-        self, current_status: StatusEnum, new_status: StatusEnum
+        self, current_status: TodoStatusEnum, new_status: TodoStatusEnum
     ) -> None:
         """Validate if the status transition is allowed."""
-        if current_status == StatusEnum.DONE:
+        if current_status == TodoStatusEnum.DONE:
             raise BadRequestError(
-                detail=f"Cannot change status once it is {StatusEnum.DONE.value}"
+                detail=f"Cannot change status once it is {TodoStatusEnum.DONE.value}"
             )
 
         if new_status not in self.allowed_status_transitions[current_status]:
@@ -63,7 +65,7 @@ class TodoPolicy:
             )
 
     def validate_severity_transition(
-        self, current_severity: SeverityEnum, new_severity: SeverityEnum
+        self, current_severity: TodoSeverityEnum, new_severity: TodoSeverityEnum
     ) -> None:
         """Validate if the severity transition is allowed."""
         if new_severity not in self.allowed_severity_transitions[current_severity]:

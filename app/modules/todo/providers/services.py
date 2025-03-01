@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from ..repository import TodoRepository
 from ..service import TodoService, TodoPolicy
-from ..controller import TodoController
 
 """
 This method is used to get the todo repository
@@ -26,15 +25,3 @@ def get_todo_service(
     policy: TodoPolicy = Depends(),
 ) -> TodoService:
     return TodoService(repository, policy)
-
-
-"""
-This method is used to get the todo controller
-depends on the todo service
-"""
-
-
-def get_todo_controller(
-    service: TodoService = Depends(get_todo_service),
-) -> TodoController:
-    return TodoController(service)

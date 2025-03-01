@@ -9,8 +9,7 @@ from .constants import (
     UPDATE_TODO_DOC,
     DELETE_TODO_DOC,
 )
-from .controller import TodoController
-from .providers import get_todo_controller
+from .providers import get_todo_service
 from .schema import (
     TodoCreate,
     TodoUpdate,
@@ -19,22 +18,22 @@ from .schema import (
 )
 
 
-router = APIRouter(prefix="/todos", tags=["todos"])
+router = APIRouter(prefix="/todos", tags=["Todos"])
 
 
 @router.post("", response_model=TodoResponse, description=CREATE_TODO_DOC)
 def create_todo(
-    todo: TodoCreate, todo_controller: TodoController = Depends(get_todo_controller)
+    todo: TodoCreate, todo_service: TodoService = Depends(get_todo_service)
 ) -> TodoResponse:
-    return todo_controller.create_todo(todo)
+    return todo_service.create(todo)
 
 
 @router.get("/all", response_model=List[TodoResponse], description=GET_ALL_TODOS_DOC)
 @cache_response(expiry=10)
 def get_all_todos(
-    request: Request, todo_controller: TodoController = Depends(get_todo_controller)
+    request: Request, todo_service: TodoService = Depends(get_todo_service)
 ) -> List[TodoResponse]:
-    return todo_controller.get_all_todos()
+    return todo_service.get_all()
 
 
 @router.get(
@@ -46,9 +45,9 @@ def get_all_todos(
 async def get_paginated_todos(
     request: Request,
     params: TodoPaginationParams = Depends(),
-    todo_controller: TodoController = Depends(get_todo_controller),
+    todo_service: TodoService = Depends(get_todo_service),
 ) -> BasePaginatedResponse:
-    response = todo_controller.get_paginated_todos(params)
+    response = todo_service.get_paginated(params)
     # Convert SQLAlchemy models to dicts before returning
     response.items = [
         TodoResponse.model_validate(item).model_dump() for item in response.items
@@ -61,22 +60,22 @@ async def get_paginated_todos(
 def get_todo(
     request: Request,
     id: int,
-    todo_controller: TodoController = Depends(get_todo_controller),
+    todo_service: TodoService = Depends(get_todo_service),
 ) -> TodoResponse:
-    return todo_controller.get_todo(id)
+    return todo_service.get_by_id(id)
 
 
 @router.patch("/{id}", response_model=TodoResponse, description=UPDATE_TODO_DOC)
 def update_todo(
     id: int,
     todo: TodoUpdate,
-    todo_controller: TodoController = Depends(get_todo_controller),
+    todo_service: TodoService = Depends(get_todo_service),
 ) -> TodoResponse:
-    return todo_controller.update_todo(id, todo)
+    return todo_service.update(id, todo)
 
 
 @router.delete("/{id}", status_code=204, description=DELETE_TODO_DOC)
 def delete_todo(
-    id: int, todo_controller: TodoController = Depends(get_todo_controller)
+    id: int, todo_service: TodoService = Depends(get_todo_service)
 ) -> None:
-    todo_controller.delete_todo(id)
+    todo_service.delete(id)

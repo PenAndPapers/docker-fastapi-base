@@ -1,7 +1,6 @@
-from .service import (get_{module}_service, get_{module}_repository, get_{module}_controller)
+from .service import (get_{module}_service, get_{module}_repository)
 
 __all__ = [
     "get_{module}_service",
-    "get_{module}_repository",
-    "get_{module}_controller",
+    "get_{module}_repository"
 ]

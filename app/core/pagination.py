@@ -12,7 +12,7 @@ class BaseSortOrder(str, Enum):
     DESC = "desc"
 
 
-class PageSize(IntEnum):
+class BasePageSize(IntEnum):
     """Valid page size options"""
 
     SMALL = 10
@@ -34,7 +34,7 @@ class BasePaginatedResponse(BaseModel, Generic[T]):
 class BasePaginationParams(BaseModel):
     # Pagination
     page: int = Field(default=1, ge=1)
-    page_size: PageSize = Field(default=PageSize.SMALL)
+    page_size: BasePageSize = Field(default=BasePageSize.SMALL)
     # Sorting
     sort_by: str = Field(default="created_at")
     sort_order: BaseSortOrder = Field(default=BaseSortOrder.DESC)

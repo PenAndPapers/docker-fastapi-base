@@ -26,13 +26,13 @@ def upgrade() -> None:
         sa.Column("description", sa.String(), nullable=True),
         sa.Column(
             "severity",
-            sa.Enum("LOW", "MEDIUM", "HIGH", "CRITICAL", name="severityenum"),
+            sa.Enum("LOW", "MEDIUM", "HIGH", "CRITICAL", name="TodoSeverityEnum"),
             server_default="LOW",
             nullable=False,
         ),
         sa.Column(
             "status",
-            sa.Enum("TODO", "IN_PROGRESS", "DONE", "CANCELLED", name="statusenum"),
+            sa.Enum("TODO", "IN_PROGRESS", "DONE", "CANCELLED", name="TodoStatusEnum"),
             server_default="TODO",
             nullable=False,
         ),
