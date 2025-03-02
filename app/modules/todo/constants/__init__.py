@@ -1,4 +1,4 @@
-from .enums import TodoSeverityEnum, TodoStatusEnum
+from .enums import TodoSeverityEnum, TodoStatusEnum, TodoSortFieldsEnum
 from .route_doc import (
     CREATE_TODO_DOC,
     GET_PAGINATED_TODOS_DOC,
@@ -11,6 +11,7 @@ from .route_doc import (
 __all__ = [
     "TodoSeverityEnum",
     "TodoStatusEnum",
+    "TodoSortFieldsEnum",
     "CREATE_TODO_DOC",
     "GET_PAGINATED_TODOS_DOC",
     "GET_TODO_DOC",

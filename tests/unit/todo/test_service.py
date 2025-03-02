@@ -1,5 +1,3 @@
-
-
 def test_create():
     # Test the service create_todo method
     pass

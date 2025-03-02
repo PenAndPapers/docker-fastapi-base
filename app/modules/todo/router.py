@@ -10,6 +10,7 @@ from .constants import (
     DELETE_TODO_DOC,
 )
 from .providers import get_todo_service
+from .service import TodoService
 from .schema import (
     TodoCreate,
     TodoUpdate,
@@ -75,7 +76,5 @@ def update_todo(
 
 
 @router.delete("/{id}", status_code=204, description=DELETE_TODO_DOC)
-def delete_todo(
-    id: int, todo_service: TodoService = Depends(get_todo_service)
-) -> None:
+def delete_todo(id: int, todo_service: TodoService = Depends(get_todo_service)) -> None:
     todo_service.delete(id)

@@ -1,17 +1,13 @@
-from .TodoSchema import (
-    TodoBase,
-    TodoCreate,
-    TodoUpdate,
-    TodoResponse,
-    TodoSortFields,
-    TodoPaginationParams,
-)
+from .TodoBase import TodoBase
+from .TodoCreate import TodoCreate
+from .TodoPagination import TodoPaginationParams
+from .TodoResponse import TodoResponse
+from .TodoUpdate import TodoUpdate
 
 __all__ = [
     "TodoBase",
     "TodoCreate",
     "TodoUpdate",
     "TodoResponse",
-    "TodoSortFields",
     "TodoPaginationParams",
 ]

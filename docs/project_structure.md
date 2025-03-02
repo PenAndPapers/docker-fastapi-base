@@ -30,10 +30,10 @@ This project follows a modular, clean architecture pattern with clear separation
 │   │     ├── providers/                # Dependency injection, service locator
 │   │     │   └── services.py           # Database connection and session management, Service factory and dependency wiring
 │   │     │
-│   │     ├── repository/               # Data access layer, handles database operations, business logic
+│   │     ├── repository/               # SQLAlchemy models, data access layer, handles database operations, business logic
 │   │     │   └── TodoRepository.py
 │   │     │
-│   │     ├── schema/                   # Pydantic models for request/response validation
+│   │     ├── schema/                   # Pydantic models, request/response, data validation, API documentation
 │   │     │   └── TodoSchema.py
 │   │     │
 │   │     ├── service/                  # Core business logic layer:
