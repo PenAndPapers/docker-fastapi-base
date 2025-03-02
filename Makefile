@@ -53,12 +53,12 @@ test-watch:
 
 # Code quality commands
 lint:
-	docker-compose exec api ruff check . --exclude scaffold
-	docker-compose exec api black --check . --exclude scaffold/
+	docker-compose exec api ruff check . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*"
+	docker-compose exec api black --check . --exclude "scaffold/" --exclude ".venv/" --exclude "scaffold/*"
 
 format:
-	docker-compose exec -T api ruff check --fix . --exclude scaffold
-	docker-compose exec -T api black . --exclude scaffold/
+	docker-compose exec -T api ruff check --fix . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*"
+	docker-compose exec -T api black . --exclude "scaffold/" --exclude ".venv/" --exclude "scaffold/*"
 
 # Migration commands
 migration:

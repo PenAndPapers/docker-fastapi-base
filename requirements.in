@@ -1,4 +1,5 @@
-fastapi
+# Dependencies (requires Python 3.11) - version SHOULD match Docker python version
+fastapi ; python_version >= "3.11" and python_version < "3.12"
 uvicorn
 sqlalchemy
 psycopg2-binary
@@ -10,4 +11,5 @@ ruff
 black
 alembic
 pytest-cov
-pytest-watch 
+pytest-watch
+pytest-mock
