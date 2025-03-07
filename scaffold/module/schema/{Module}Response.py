@@ -1,17 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-
-
-class {Module}Base(BaseModel):
-    pass
-
-
-class {Module}Create({Module}Base):
-    pass
-
-
-class {Module}Update({Module}Base):
-    pass
+from .{Module}Base import {Module}Base
 
 
 class {Module}Response({Module}Base):

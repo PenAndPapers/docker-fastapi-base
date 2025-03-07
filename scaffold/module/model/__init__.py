@@ -1,3 +1,3 @@
-from .{Module}Model import {Module}Model
+from .{Module}Model import {Module}
 
-__all__ = ["{Module}Model"]
+__all__ = ["{Module}"]

@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from ..repository import {Module}Repository
 from ..service import {Module}Service, {Module}Policy
-from ..controller import {Module}Controller
 
 
 def get_{module}_repository(db: Session = Depends(get_db)) -> {Module}Repository:

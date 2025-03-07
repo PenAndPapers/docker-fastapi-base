@@ -19,7 +19,7 @@ from .schema import (
 )
 
 
-router = APIRouter(prefix="/todos", tags=["Todos"])
+router = APIRouter(prefix="/todo", tags=["Todo"])
 
 
 @router.post("", response_model=TodoResponse, description=CREATE_TODO_DOC)

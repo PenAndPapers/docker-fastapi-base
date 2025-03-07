@@ -39,7 +39,7 @@ def get_json_format(response):
 
 
 def test_create(client: TestClient, todo_data):
-    response = client.post("/todos", json=todo_data)
+    response = client.post("/todo", json=todo_data)
     assert response.status_code == 200
     assert response is not None
 
@@ -52,14 +52,14 @@ def test_create(client: TestClient, todo_data):
 
 
 def test_get_by_id(client: TestClient, todo_data):
-    create_response = client.post("/todos", json=todo_data)
+    create_response = client.post("/todo", json=todo_data)
     assert create_response.status_code == 200
     assert create_response is not None
 
     res = get_json_format(create_response)
     id = res["id"]
 
-    get_response = client.get(f"/todos/{id}")
+    get_response = client.get(f"/todo/{id}")
     assert get_response.status_code == 200
 
     todo = get_json_format(get_response)
@@ -68,11 +68,11 @@ def test_get_by_id(client: TestClient, todo_data):
 
 
 def test_get_all(client: TestClient, todo_data):
-    create_response = client.post("/todos", json=todo_data)
+    create_response = client.post("/todo", json=todo_data)
     assert create_response.status_code == 200
     assert create_response is not None
 
-    get_response = client.get("/todos/all")
+    get_response = client.get("/todo/all")
     assert get_response.status_code == 200
 
     res = get_json_format(get_response)
@@ -83,14 +83,14 @@ def test_get_all(client: TestClient, todo_data):
 
 
 def test_update(client: TestClient, todo_data, todo_update_data):
-    create_response = client.post("/todos", json=todo_data)
+    create_response = client.post("/todo", json=todo_data)
     assert create_response.status_code == 200
     assert create_response is not None
 
     res = get_json_format(create_response)
     id = res["id"]
 
-    update_response = client.patch(f"/todos/{id}", json=todo_update_data)
+    update_response = client.patch(f"/todo/{id}", json=todo_update_data)
 
     assert update_response.status_code == 200
     assert update_response is not None
@@ -104,12 +104,12 @@ def test_update(client: TestClient, todo_data, todo_update_data):
 
 
 def test_delete(client: TestClient, todo_data):
-    create_response = client.post("/todos", json=todo_data)
+    create_response = client.post("/todo", json=todo_data)
     assert create_response.status_code == 200
     assert create_response is not None
 
     res = get_json_format(create_response)
     id = res["id"]
 
-    delete_response = client.delete(f"/todos/{id}")
+    delete_response = client.delete(f"/todo/{id}")
     assert delete_response.status_code == 204

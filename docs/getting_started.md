@@ -142,7 +142,7 @@ docker-compose ps
 curl http://localhost:8000/health
 
 # Create a todo
-curl -X POST http://localhost:8000/todos \
+curl -X POST http://localhost:8000/todo \
   -H "Content-Type: application/json" \
   -d '{"title": "Test Todo", "description": "Testing the API", "severity": "LOW"}'
 ```

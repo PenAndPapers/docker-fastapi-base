@@ -4,17 +4,17 @@ from .schema import {Module}Create, {Module}Update, {Module}Response
 from .service import {Module}Service
 from .providers import get_{module}_service
 
-router = APIRouter(prefix="/{module}s", tags=["{module}s"])
+router = APIRouter(prefix="/{module}", tags=["{Module}"])
 
 
-@router.post("/", response_model={Module}Response)
+@router.post("", response_model={Module}Response)
 def create(
     data: {Module}Create, service: {Module}Service = Depends(get_{module}_service)
 ):
     pass
 
 
-@router.get("/", response_model=List[{Module}Response])
+@router.get("/all", response_model=List[{Module}Response])
 def get_all(service: {Module}Service = Depends(get_{module}_service)):
     pass
 
