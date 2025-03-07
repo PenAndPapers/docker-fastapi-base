@@ -6,10 +6,12 @@ from app.database.session import get_db
 
 
 @pytest.fixture
-def client(db_session):
+def client(db_session, mock_redis):
+    app.state.redis = mock_redis
     app.dependency_overrides[get_db] = lambda: db_session
     yield TestClient(app)
     app.dependency_overrides.clear()
+    delattr(app.state, "redis")
 
 
 @pytest.fixture
@@ -50,14 +52,34 @@ def test_create(client: TestClient, todo_data):
 
 
 def test_get_by_id(client: TestClient, todo_data):
-    response = client.post("/todos", json=todo_data)
-    assert response.status_code == 200
-    assert response is not None
+    create_response = client.post("/todos", json=todo_data)
+    assert create_response.status_code == 200
+    assert create_response is not None
 
-    res = get_json_format(response)
+    res = get_json_format(create_response)
+    id = res["id"]
 
-    assert res["id"] is not None
-    assert res["title"] == todo_data["title"]
+    get_response = client.get(f"/todos/{id}")
+    assert get_response.status_code == 200
+
+    todo = get_json_format(get_response)
+    assert todo["id"] is not None
+    assert todo["title"] == todo_data["title"]
+
+
+def test_get_all(client: TestClient, todo_data):
+    create_response = client.post("/todos", json=todo_data)
+    assert create_response.status_code == 200
+    assert create_response is not None
+
+    get_response = client.get("/todos/all")
+    assert get_response.status_code == 200
+
+    res = get_json_format(get_response)
+
+    assert res is not None
+    assert isinstance(res, list)
+    assert len(res) > 0
 
 
 def test_update(client: TestClient, todo_data, todo_update_data):
@@ -66,8 +88,9 @@ def test_update(client: TestClient, todo_data, todo_update_data):
     assert create_response is not None
 
     res = get_json_format(create_response)
+    id = res["id"]
 
-    update_response = client.patch(f"/todos/{res['id']}", json=todo_update_data)
+    update_response = client.patch(f"/todos/{id}", json=todo_update_data)
 
     assert update_response.status_code == 200
     assert update_response is not None
@@ -78,3 +101,15 @@ def test_update(client: TestClient, todo_data, todo_update_data):
     assert update_res["id"] == res["id"]
     assert update_res["title"] == todo_update_data["title"]
     assert update_res["updated_at"] != res["updated_at"]
+
+
+def test_delete(client: TestClient, todo_data):
+    create_response = client.post("/todos", json=todo_data)
+    assert create_response.status_code == 200
+    assert create_response is not None
+
+    res = get_json_format(create_response)
+    id = res["id"]
+
+    delete_response = client.delete(f"/todos/{id}")
+    assert delete_response.status_code == 204

@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.core.config import AppSettings
+from unittest.mock import AsyncMock
 
 
 @pytest.fixture
@@ -26,3 +27,11 @@ def db_session():
     # Cleanup
     session.close()
     # Base.metadata.drop_all(engine)  # Commented out to preserve the data
+
+
+@pytest.fixture
+def mock_redis():
+    mock = AsyncMock()
+    mock.get.return_value = None
+    mock.set.return_value = True
+    return mock
