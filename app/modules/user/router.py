@@ -8,9 +8,7 @@ router = APIRouter(prefix="/user", tags=["User"])
 
 
 @router.post("", response_model=UserResponse)
-def create(
-    data: UserCreate, service: UserService = Depends(get_user_service)
-):
+def create(data: UserCreate, service: UserService = Depends(get_user_service)):
     pass
 
 

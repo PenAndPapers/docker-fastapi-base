@@ -16,7 +16,7 @@ docker-down-v:
 	docker-compose down -v --remove-orphans
 
 docker-build:
-	docker-compose build --parallel
+	docker-compose build --parallel --no-cache
 
 docker-logs:
 	docker-compose logs -f
@@ -28,6 +28,11 @@ docker-ps:
 install:
 	pip install uv
 	uv pip install -r requirements.in
+
+# Update dependencies
+update-deps:
+	uv pip install -r requirements.in
+	$(MAKE) docker-build
 
 # Testing commands
 test:
@@ -57,8 +62,8 @@ lint:
 	docker-compose exec api black --check . --exclude "scaffold/" --exclude ".venv/" --exclude "scaffold/*"
 
 format:
-	docker-compose exec -T api ruff check --fix . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*"
-	docker-compose exec -T api black . --exclude "scaffold/" --exclude ".venv/" --exclude "scaffold/*"
+	docker-compose exec -T api ruff check --fix . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*" --exclude ".venv/*"
+	docker-compose exec -T api black . --exclude "scaffold/" --exclude ".venv/" --exclude ".venv/*" --exclude "scaffold/*"
 
 # Migration commands
 migration:
@@ -157,6 +162,7 @@ help:
 	@echo "  docker-logs     - View application logs"
 	@echo "  docker-ps       - List running containers"
 	@echo "  install         - Install dependencies using uv"
+	@echo "  update-deps     - Update dependencies"
 	@echo "  test            - Run all tests"
 	@echo "  test-unit       - Run unit tests"
 	@echo "  test-integration - Run integration tests"

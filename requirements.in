@@ -4,12 +4,14 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 redis
-pytest
 httpx
 pydantic-settings
+email-validator
 ruff
 black
 alembic
+pyjwt[crypto]
+pytest
 pytest-cov
 pytest-watch
 pytest-mock

@@ -1,8 +1,8 @@
 from typing import List
+from .UserPolicy import UserPolicy
 from ..repository.UserRepository import UserRepository
 from ..model import User
 from ..schema import UserCreate, UserUpdate
-from .UserPolicy import UserPolicy
 
 
 class UserService:

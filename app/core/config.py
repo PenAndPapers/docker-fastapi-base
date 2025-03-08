@@ -20,6 +20,12 @@ class AppSettings(BaseModel):
     api_host: str = "0.0.0.0"
     debug: bool = False
 
+    # JWT settings
+    jwt_secret_key: str = "z8))zey3+^#*gu-1#hjwz13zujappsc6nh4i3ot56yhg#ejmp2"
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 60
+    jwt_refresh_token_expire_days: int = 1
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.database_url:

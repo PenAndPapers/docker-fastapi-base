@@ -6,6 +6,7 @@ from typing import Dict
 from app.database import get_db
 from app.core import app_settings
 from app.modules.todo.router import router as todo_router
+from app.modules.auth.router import router as auth_router
 from app.modules.user.router import router as user_router
 
 
@@ -21,6 +22,7 @@ Application module routers
 """
 
 app.include_router(todo_router)
+app.include_router(auth_router)
 app.include_router(user_router)
 
 
