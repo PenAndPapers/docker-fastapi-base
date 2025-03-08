@@ -1,4 +1,4 @@
-from .UserModel import User
-from .UserTokenModel import UserToken
+from .User import User
+from .UserToken import UserToken
 
 __all__ = ["User", "UserToken"]

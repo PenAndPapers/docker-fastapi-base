@@ -1,3 +1,3 @@
-from .TodoModel import Todo
+from .Todo import Todo
 
 __all__ = ["Todo"]

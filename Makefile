@@ -62,7 +62,7 @@ lint:
 	docker-compose exec api black --check . --exclude "scaffold/" --exclude ".venv/" --exclude "scaffold/*"
 
 format:
-	docker-compose exec -T api ruff check --fix . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*" --exclude ".venv/*"
+	docker-compose exec -T api ruff format . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*" --exclude ".venv/*"
 	docker-compose exec -T api black . --exclude "scaffold/" --exclude ".venv/" --exclude ".venv/*" --exclude "scaffold/*"
 
 # Migration commands

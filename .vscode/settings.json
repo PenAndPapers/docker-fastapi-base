@@ -3,5 +3,11 @@
     "tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "[python]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "ms-python.python"
+  }
 }
