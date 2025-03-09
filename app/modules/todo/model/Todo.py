@@ -30,3 +30,4 @@ class Todo(Base):
         onupdate=text("CURRENT_TIMESTAMP"),
         nullable=False,
     )
+    deleted_at = Column(DateTime(timezone=True), nullable=True)

@@ -9,6 +9,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
     build-essential \
+    python3-dev \
+    libffi-dev \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pip-tools

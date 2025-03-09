@@ -1,5 +1,17 @@
 .PHONY: docker-up docker-down docker-build docker-logs docker-ps test lint clean install test-all test-cov test-watch test-unit test-integration test-e2e format up-foreground up-background migration migrate-down migrate-logs migrate-check down down-v scaffold-module
 
+# Development commands (local machine)
+install:
+	pip install uv
+	uv pip install -r requirements.in
+	uv pip compile requirements.in -o requirements.txt
+
+update-deps:
+	uv pip install -r requirements.in
+	uv pip compile requirements.in -o requirements.txt
+	$(MAKE) docker-build
+	@echo "Dependencies updated successfully"
+
 # Docker commands
 docker-up-foreground:
 	docker-compose up
@@ -18,21 +30,16 @@ docker-down-v:
 docker-build:
 	docker-compose build --parallel --no-cache
 
+docker-update-deps:
+	docker-compose exec api pip install -r requirements.in
+	$(MAKE) docker-build
+	@echo "Container dependencies updated successfully"
+
 docker-logs:
 	docker-compose logs -f
 
 docker-ps:
 	docker-compose ps
-
-# Development commands
-install:
-	pip install uv
-	uv pip install -r requirements.in
-
-# Update dependencies
-update-deps:
-	uv pip install -r requirements.in
-	$(MAKE) docker-build
 
 # Testing commands
 test:
@@ -58,17 +65,16 @@ test-watch:
 
 # Code quality commands
 lint:
-	docker-compose exec api ruff check . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*"
-	docker-compose exec api black --check . --exclude "scaffold/" --exclude ".venv/" --exclude "scaffold/*"
+	docker-compose exec api ruff check app tests docker --exclude .venv --exclude scaffold
+	docker-compose exec api black --check app tests docker --exclude .venv --exclude scaffold
 
 format:
-	docker-compose exec -T api ruff format . --exclude scaffold/ --exclude .venv/ --exclude "scaffold/*" --exclude ".venv/*"
-	docker-compose exec -T api black . --exclude "scaffold/" --exclude ".venv/" --exclude ".venv/*" --exclude "scaffold/*"
+	docker-compose exec -T api ruff format app tests docker --exclude .venv --exclude scaffold
+	docker-compose exec -T api black app tests docker --exclude .venv --exclude scaffold
 
 # Migration commands
 migration:
 	@read -p "Enter migration name: " name; \
-	timestamp=$$(date +%Y%m%d_%H%M%S); \
 	docker-compose exec api alembic revision --autogenerate -m "$$name"
 
 migrate:
@@ -79,6 +85,18 @@ migrate-down:
 
 migrate-logs:
 	docker-compose exec api alembic history --verbose
+
+migrate-clean:
+	@read -p "DANGER: This will remove all migration files! Are you sure you want to delete all migrations? (y/n) " answer; \
+	if [ "$$answer" = "y" ]; then \
+		docker-compose exec api rm -rf /app/docker/postgres/migrations/__pycache__; \
+		docker-compose exec api rm -rf /app/docker/postgres/migrations/versions/*; \
+		rm -rf docker/postgres/migrations/__pycache__; \
+		rm -rf docker/postgres/migrations/versions/*; \
+		echo "Migration files removed"; \
+	else \
+		echo "Operation cancelled"; \
+	fi
 
 migrate-check:
 	docker-compose exec api alembic current
@@ -153,25 +171,44 @@ clean:
 # Help command
 help:
 	@echo "Available commands:"
-	@echo "  up-foreground   - Start the application in foreground mode"
-	@echo "  up-background   - Start the application in background mode"
-	@echo "  up              - Alias for up-background"
-	@echo "  down            - Stop the application"
-	@echo "  down-v          - Stop the application and remove volumes"
-	@echo "  docker-build    - Build the containers"
-	@echo "  docker-logs     - View application logs"
-	@echo "  docker-ps       - List running containers"
-	@echo "  install         - Install dependencies using uv"
-	@echo "  update-deps     - Update dependencies"
-	@echo "  test            - Run all tests"
-	@echo "  test-unit       - Run unit tests"
-	@echo "  test-integration - Run integration tests"
-	@echo "  test-e2e        - Run end-to-end tests"
-	@echo "  test-all        - Run tests with verbose output"
-	@echo "  test-cov        - Run tests with coverage report"
-	@echo "  test-watch      - Run tests in watch mode"
-	@echo "  lint            - Run linting checks"
-	@echo "  format          - Format code using ruff and black"
-	@echo "  migration       - Create a new migration file"
-	@echo "  migrate         - Run all pending migrations"
-	@echo "  scaffold-module - Generate a new module"
+	@echo "\033[33m Development commands: \033[0m"
+	@echo "\033[32m  install                             - Install dependencies using uv \033[0m"
+	@echo "\033[32m  update-deps                         - Update dependencies locally and rebuild docker \033[0m"
+	@echo ""
+	@echo "\033[1;33m Docker commands: \033[0m"
+	@echo "\033[32m  docker-up-foreground                - Start the application in foreground mode \033[0m"
+	@echo "\033[32m  docker-up-background                - Start the application in background mode \033[0m"
+	@echo "\033[32m  docker-up                           - Alias for docker-up-background \033[0m"
+	@echo "\033[32m  docker-down                         - Stop the application and remove orphans \033[0m"
+	@echo "\033[32m  docker-down-v                       - Stop the application, remove orphans and volumes \033[0m"
+	@echo "\033[32m  docker-build                        - Build the containers \033[0m"
+	@echo "\033[32m  docker-update-deps                  - Update dependencies in container \033[0m"
+	@echo "\033[32m  docker-logs                         - View application logs \033[0m"
+	@echo "\033[32m  docker-ps                           - List running containers \033[0m"
+	@echo ""
+	@echo "\033[1;33m Testing commands: \033[0m"
+	@echo "\033[32m  test                                - Run all tests \033[0m"
+	@echo "\033[32m  test-unit                           - Run unit tests \033[0m"
+	@echo "\033[32m  test-integration                    - Run integration tests \033[0m"
+	@echo "\033[32m  test-e2e                            - Run end-to-end tests \033[0m"
+	@echo " \033[32m test-all                            - Run tests with verbose output \033[0m"
+	@echo "\033[32m  test-cov                            - Run tests with coverage report" \033[0m
+	@echo "\033[32m  test-watch                          - Run tests in watch mode \033[0m"
+	@echo ""
+	@echo "\033[1;33m Code quality commands: \033[0m"
+	@echo "\033[32m  lint                                - Run linting checks \033[0m"
+	@echo "\033[32m  format                              - Format code using ruff and black \033[0m"
+	@echo ""
+	@echo "\033[1;33m Migration commands: \033[0m"
+	@echo "\033[32m  migration                           - Create a new migration file \033[0m"
+	@echo "\033[32m  migrate                             - Run all pending migrations \033[0m"
+	@echo "\033[32m  migrate-down                        - Downgrade to previous migration \033[0m"
+	@echo "\033[32m  migrate-logs                        - Show migration history \033[0m"
+	@echo "\033[32m  migrate-clean                       - Remove all migration files (with confirmation) \033[0m"
+	@echo "\033[32m  migrate-check                       - Show current and pending migrations \033[0m"
+	@echo ""
+	@echo "\033[1;33m Module commands: \033[0m"
+	@echo "\033[32m  scaffold-module                     - Generate a new module \033[0m"
+	@echo ""
+	@echo "\033[1;33m Cleanup commands: \033[0m"
+	@echo "\033[32m  clean                               - Remove Python cache and temporary files \033[0m"

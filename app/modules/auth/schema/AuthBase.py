@@ -6,6 +6,8 @@ class AuthBase(BaseModel):
     email: EmailStr
     password: str
 
+    model_config = {"from_attributes": True}
+
     @field_validator("password")
     @classmethod
     def validate_password(cls, value: str) -> str:
@@ -25,17 +27,18 @@ class AuthBase(BaseModel):
         return value
 
 
-class AuthToken(BaseModel):
-    access_token: str
-    refresh_token: str
-    expires_at: datetime
-
-
-class AuthUser(AuthBase):
+class AuthUser(BaseModel):
     id: int
+    email: EmailStr
     first_name: str
     last_name: str
+    phone_number: str | None = None
+    gender: str | None = None
+    date_of_birth: datetime | None = None
+    address: str | None = None
     is_verified: bool
-    token: AuthToken
     created_at: datetime
     updated_at: datetime
+    deleted_at: datetime | None = None
+
+    model_config = {"from_attributes": True}

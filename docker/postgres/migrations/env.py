@@ -9,7 +9,10 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../.."))
 
 # Import your models
-from app.modules.todo.model.TodoModel import Todo
+from app.modules.todo.model.Todo import Todo
+from app.modules.user.model.User import User
+from app.modules.user.model.UserToken import UserToken
+from app.database import Base
 
 # this is the Alembic Config object
 config = context.config
@@ -19,7 +22,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Add your model's MetaData object here for 'autogenerate' support
-target_metadata = Todo.metadata
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
