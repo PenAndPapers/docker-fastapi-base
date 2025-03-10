@@ -29,18 +29,22 @@ class AuthService:
         )
 
         if auth_user:
-            generated_token = TokenResponse.model_validate(
-                self.token_policy._generate_token(auth_user.id)
-            )
+            token_data = self.token_policy._generate_token(auth_user.id)
             stored_token = self.repository.store_token(
-                generated_token.model_dump(exclude={"token_type"})
+                TokenRequest(
+                    user_id=auth_user.id,
+                    access_token=token_data.access_token,
+                    refresh_token=token_data.refresh_token,
+                    expires_at=token_data.expires_at,
+                )
             )
+
+            # Override the default token_type with the one from policy
+            stored_token.token_type = token_data.token_type
 
             return RegisterResponse(
                 **auth_user.model_dump(),
-                token=TokenResponse(
-                    **stored_token, token_type=generated_token.token_type
-                ),
+                token=stored_token,
             )
 
         raise HTTPException(

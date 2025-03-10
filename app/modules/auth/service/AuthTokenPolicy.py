@@ -50,10 +50,13 @@ class AuthTokenPolicy:
         # Add more claims for security
         to_encode.update(
             {
-                "exp": expires_delta.timestamp(),
+                "exp": expires_delta.timestamp(),  # expiration time
                 "iat": datetime.utcnow().timestamp(),  # issued at
+                "nbf": datetime.utcnow().timestamp(),  # not valid before
                 "jti": str(uuid.uuid4()),  # unique token ID
-                "type": "access",  # or "refresh" for refresh tokens
+                "iss": app_settings.app_name,  # issuer
+                "aud": app_settings.app_audience,  # intended audience
+                "type": TokenTypeEnum.ACCESS,  # token type (access/refresh)
             }
         )
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)

@@ -45,7 +45,8 @@ class AuthRepository:
         pass
 
     def store_token(self, data: TokenRequest) -> TokenResponse:
-        return self.token_repository.create(data)
+        token = self.token_repository.create(data)
+        return TokenResponse(**vars(token))
 
     def refresh_token(self, user_id: int, data: TokenRequest) -> TokenResponse:
         print(data)

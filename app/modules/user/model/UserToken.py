@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, text, Index
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -21,7 +21,8 @@ class UserToken(Base):
         server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
     )
-    deleted_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (Index("idx_user_tokens_expires_at", "expires_at"),)
 
     # Relationship to user
     user = relationship("User", back_populates="tokens")

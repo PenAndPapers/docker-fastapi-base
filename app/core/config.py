@@ -6,6 +6,7 @@ class AppSettings(BaseModel):
     # Application settings
     app_name: str = "Docker FastAPI"
     api_version: str = "v1"
+    app_audience: str = "fastapi-app"
 
     # Database settings
     db_host: str = "db"  # Changed from postgres to db to match service name
