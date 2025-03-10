@@ -29,6 +29,7 @@ class AuthService:
         )
 
         if auth_user:
+            # Generate token and store it
             token_data = self.token_policy._generate_token(auth_user.id)
             stored_token = self.repository.store_token(
                 TokenRequest(
@@ -61,5 +62,30 @@ class AuthService:
         return self.repository.logout(data)
 
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
-        """Refresh"""
-        return self.repository.refresh(data)
+        """Refresh token and generate new access token"""
+        # 1. Verify tokens belong to the claimed user
+        user_id_from_token = self.token_policy._verify_token(
+            data.refresh_token,
+            token_type=TokenTypeEnum.REFRESH
+        )
+        
+        # 2. Ensure token belongs to the requesting user
+        if int(user_id_from_token) != data.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token does not belong to the user"
+            )
+
+        # 3. Generate new token pair
+        new_tokens = self.token_policy._generate_token(data.user_id)
+        
+        # 4. Store the new tokens in database
+        stored_token = self.repository.store_token(TokenRequest(
+            user_id=data.user_id,
+            access_token=new_tokens.access_token,
+            refresh_token=new_tokens.refresh_token,
+            expires_at=new_tokens.expires_at,
+        ))
+
+        stored_token.token_type = new_tokens.token_type
+        return stored_token

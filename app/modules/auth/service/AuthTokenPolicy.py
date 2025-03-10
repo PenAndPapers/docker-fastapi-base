@@ -9,20 +9,23 @@ from ..schema import TokenResponse
 
 
 class AuthTokenPolicy:
-    def __init__(self):
+    def __init__(self, user_repository):
         self.secret_key = app_settings.jwt_secret_key
         self.algorithm = app_settings.jwt_algorithm
         self.access_token_expire_minutes = app_settings.jwt_access_token_expire_minutes
         self.refresh_token_expire_days = app_settings.jwt_refresh_token_expire_days
+        self.user_repository = user_repository
 
     def _generate_token(self, user_id: int) -> TokenResponse:
-        # Generate access and refresh tokens
-        if user_id is None:
+        # Validate user exists in database
+        user = self.user_repository.get_by_id(user_id)
+        if not user:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User ID is required to generate tokens",
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
             )
 
+        # Generate access and refresh tokens
         access_token_expires = datetime.utcnow() + timedelta(
             minutes=self.access_token_expire_minutes
         )
@@ -45,32 +48,44 @@ class AuthTokenPolicy:
             token_type=TokenTypeEnum.BEARER,  # here we manually set the token type as bearer
         )
 
-    def _create_token(self, data: dict, expires_delta: datetime) -> str:
+    def _create_token(self, data: dict, expires_delta: datetime, token_type: TokenTypeEnum = TokenTypeEnum.ACCESS) -> str:
         to_encode = data.copy()
-        # Add more claims for security
-        to_encode.update(
-            {
-                "exp": expires_delta.timestamp(),  # expiration time
-                "iat": datetime.utcnow().timestamp(),  # issued at
-                "nbf": datetime.utcnow().timestamp(),  # not valid before
-                "jti": str(uuid.uuid4()),  # unique token ID
-                "iss": app_settings.app_name,  # issuer
-                "aud": app_settings.app_audience,  # intended audience
-                "type": TokenTypeEnum.ACCESS,  # token type (access/refresh)
-            }
-        )
+        to_encode.update({
+            "exp": expires_delta.timestamp(),
+            "iat": datetime.utcnow().timestamp(),
+            "nbf": datetime.utcnow().timestamp(),
+            "jti": str(uuid.uuid4()),
+            "iss": app_settings.app_name,
+            "aud": app_settings.app_audience,
+            "type": token_type,
+        })
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
-    def _verify_token(self, token: str) -> Optional[str]:
+    def _verify_token(self, token: str, verify_exp: bool = True, token_type: TokenTypeEnum = TokenTypeEnum.ACCESS) -> str:
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
-            return payload.get("sub")
+            options = {"verify_exp": verify_exp}
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm], options=options)
+            
+            # Verify token type
+            if payload.get("type") != token_type:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Invalid token type: expected {token_type}"
+                )
+                
+            if not payload.get("sub"):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid token: missing subject claim"
+                )
+            return payload["sub"]
         except jwt.ExpiredSignatureError:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired"
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Token has expired"
             )
         except jwt.JWTError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
+                detail="Could not validate credentials"
             )
