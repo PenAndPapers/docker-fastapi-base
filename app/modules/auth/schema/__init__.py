@@ -1,18 +1,18 @@
-from .AuthBase import AuthBase, AuthUser
-from .AuthRegister import AuthRegister, AuthRegisterResponse
-from .AuthLogin import AuthLogin, AuthLoginResponse
-from .AuthLogout import AuthLogout, AuthLogoutResponse
-from .AuthToken import AuthToken, AuthTokenResponse
+from .AuthBase import AuthBase, AuthUserResponse
+from .AuthRegister import RegisterRequest, RegisterResponse
+from .AuthLogin import LoginRequest, LoginResponse
+from .AuthLogout import LogoutRequest, LogoutResponse
+from .AuthToken import TokenRequest, TokenResponse
 
 __all__ = [
     "AuthBase",
-    "AuthUser",
-    "AuthRegister",
-    "AuthRegisterResponse",
-    "AuthLogin",
-    "AuthLoginResponse",
-    "AuthLogout",
-    "AuthLogoutResponse",
-    "AuthToken",
-    "AuthTokenResponse",
+    "AuthUserResponse",
+    "RegisterRequest",
+    "RegisterResponse",
+    "LoginRequest",
+    "LoginResponse",
+    "LogoutRequest",
+    "LogoutResponse",
+    "TokenRequest",
+    "TokenResponse",
 ]

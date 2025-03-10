@@ -3,6 +3,10 @@ from typing import Optional
 
 
 class AppSettings(BaseModel):
+    # Application settings
+    app_name: str = "Docker FastAPI"
+    api_version: str = "v1"
+
     # Database settings
     db_host: str = "db"  # Changed from postgres to db to match service name
     db_port: int = 5432

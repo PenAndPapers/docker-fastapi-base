@@ -1,9 +1,9 @@
-from .AuthBase import AuthBase, AuthUser
+from .AuthBase import AuthBase, AuthUserResponse
 
 
-class AuthLogin(AuthBase):
+class LoginRequest(AuthBase):
     pass
 
 
-class AuthLoginResponse(AuthUser):
+class LoginResponse(AuthUserResponse):
     pass

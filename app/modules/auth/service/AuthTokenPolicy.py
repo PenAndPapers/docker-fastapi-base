@@ -1,24 +1,33 @@
-from datetime import datetime, timedelta
-from typing import Optional
 import jwt
 import uuid
+from datetime import datetime, timedelta
+from typing import Optional
 from fastapi import HTTPException, status
 from app.core import app_settings
-from ..schema import AuthToken
+from ..constants import TokenTypeEnum
+from ..schema import TokenResponse
 
 
-class AuthPolicy:
-    SECRET_KEY = app_settings.jwt_secret_key
-    ALGORITHM = app_settings.jwt_algorithm
-    ACCESS_TOKEN_EXPIRE_MINUTES = app_settings.jwt_access_token_expire_minutes
-    REFRESH_TOKEN_EXPIRE_DAYS = app_settings.jwt_refresh_token_expire_days
+class AuthTokenPolicy:
+    def __init__(self):
+        self.secret_key = app_settings.jwt_secret_key
+        self.algorithm = app_settings.jwt_algorithm
+        self.access_token_expire_minutes = app_settings.jwt_access_token_expire_minutes
+        self.refresh_token_expire_days = app_settings.jwt_refresh_token_expire_days
 
-    def _generate_token(self, user_id: int) -> AuthToken:
+    def _generate_token(self, user_id: int) -> TokenResponse:
+        # Generate access and refresh tokens
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User ID is required to generate tokens",
+            )
+
         access_token_expires = datetime.utcnow() + timedelta(
-            minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES
+            minutes=self.access_token_expire_minutes
         )
         refresh_token_expires = datetime.utcnow() + timedelta(
-            days=self.REFRESH_TOKEN_EXPIRE_DAYS
+            days=self.refresh_token_expire_days
         )
 
         access_token = self._create_token(
@@ -28,11 +37,12 @@ class AuthPolicy:
             data={"sub": str(user_id)}, expires_delta=refresh_token_expires
         )
 
-        return AuthToken(
+        return TokenResponse(
             user_id=user_id,
             access_token=access_token,
             refresh_token=refresh_token,
             expires_at=access_token_expires,
+            token_type=TokenTypeEnum.BEARER,  # here we manually set the token type as bearer
         )
 
     def _create_token(self, data: dict, expires_delta: datetime) -> str:
@@ -46,11 +56,11 @@ class AuthPolicy:
                 "type": "access",  # or "refresh" for refresh tokens
             }
         )
-        return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
     def _verify_token(self, token: str) -> Optional[str]:
         try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             return payload.get("sub")
         except jwt.ExpiredSignatureError:
             raise HTTPException(

@@ -1,4 +1,4 @@
-from .AuthPolicy import AuthPolicy
+from .AuthTokenPolicy import AuthTokenPolicy
 from .AuthService import AuthService
 
-__all__ = ["AuthPolicy", "AuthService"]
+__all__ = ["AuthTokenPolicy", "AuthService"]

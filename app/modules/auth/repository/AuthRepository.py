@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 from ..schema import (
-    AuthUser,
-    AuthRegister,
-    AuthLogin,
-    AuthLoginResponse,
-    AuthLogout,
-    AuthLogoutResponse,
-    AuthToken,
-    AuthTokenResponse,
+    AuthUserResponse,
+    RegisterRequest,
+    LoginRequest,
+    LoginResponse,
+    LogoutRequest,
+    LogoutResponse,
+    TokenRequest,
+    TokenResponse,
 )
 from app.database import DatabaseRepository
 from app.modules.user.model import User, UserToken
@@ -19,9 +19,9 @@ class AuthRepository:
         self.user_repository = DatabaseRepository(db, User)
         self.token_repository = DatabaseRepository(db, UserToken)
 
-    def register(self, data: AuthRegister) -> AuthUser:
+    def register(self, data: RegisterRequest) -> AuthUserResponse:
         user = self.user_repository.create(data)
-        return AuthUser(
+        return AuthUserResponse(
             id=user.id,
             email=user.email,
             first_name=user.first_name,
@@ -36,14 +36,17 @@ class AuthRepository:
             deleted_at=user.deleted_at,
         )
 
-    def login(self, data: AuthLogin) -> AuthLoginResponse:
+    def login(self, data: LoginRequest) -> LoginResponse:
         print(data)
+        pass
 
-    def logout(self, data: AuthLogout) -> AuthLogoutResponse:
+    def logout(self, data: LogoutRequest) -> LogoutResponse:
         print(data)
+        pass
 
-    def store_token(self, data: AuthToken) -> AuthTokenResponse:
+    def store_token(self, data: TokenRequest) -> TokenResponse:
         return self.token_repository.create(data)
 
-    def refresh_token(self, user_id: int, data: AuthToken) -> AuthTokenResponse:
+    def refresh_token(self, user_id: int, data: TokenRequest) -> TokenResponse:
         print(data)
+        pass

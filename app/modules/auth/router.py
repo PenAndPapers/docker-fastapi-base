@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from .schema import (
-    AuthRegister,
-    AuthRegisterResponse,
-    AuthLogin,
-    AuthLoginResponse,
-    AuthLogout,
-    AuthLogoutResponse,
-    AuthToken,
-    AuthTokenResponse,
+    RegisterRequest,
+    RegisterResponse,
+    LoginRequest,
+    LoginResponse,
+    LogoutRequest,
+    LogoutResponse,
+    TokenRequest,
+    TokenResponse,
 )
 from .service import AuthService
 from .providers import get_auth_service
@@ -15,29 +15,29 @@ from .providers import get_auth_service
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/register", response_model=AuthRegisterResponse)
+@router.post("/register", response_model=RegisterResponse)
 def register(
-    data: AuthRegister, service: AuthService = Depends(get_auth_service)
-) -> AuthRegisterResponse:
+    data: RegisterRequest, service: AuthService = Depends(get_auth_service)
+) -> RegisterResponse:
     return service.register(data)
 
 
-@router.post("/login", response_model=AuthLoginResponse)
+@router.post("/login", response_model=LoginResponse)
 def login(
-    data: AuthLogin, service: AuthService = Depends(get_auth_service)
-) -> AuthLoginResponse:
+    data: LoginRequest, service: AuthService = Depends(get_auth_service)
+) -> LoginResponse:
     return service.login(data)
 
 
-@router.post("/logout", response_model=AuthLogoutResponse)
+@router.post("/logout", response_model=LogoutResponse)
 def logout(
-    data: AuthLogout, service: AuthService = Depends(get_auth_service)
-) -> AuthLogoutResponse:
+    data: LogoutRequest, service: AuthService = Depends(get_auth_service)
+) -> LogoutResponse:
     return service.logout(data)
 
 
-@router.patch("/refresh_token", response_model=AuthTokenResponse)
+@router.patch("/refresh_token", response_model=TokenResponse)
 def refresh_token(
-    data: AuthToken, service: AuthService = Depends(get_auth_service)
-) -> AuthTokenResponse:
+    data: TokenRequest, service: AuthService = Depends(get_auth_service)
+) -> TokenResponse:
     return service.refresh_token(data)

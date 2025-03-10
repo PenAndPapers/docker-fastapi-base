@@ -2,7 +2,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from ..repository import AuthRepository
-from ..service import AuthService, AuthPolicy
+from ..service import AuthService, AuthTokenPolicy
 
 
 def get_auth_repository(db: Session = Depends(get_db)) -> AuthRepository:
@@ -11,6 +11,6 @@ def get_auth_repository(db: Session = Depends(get_db)) -> AuthRepository:
 
 def get_auth_service(
     repository: AuthRepository = Depends(get_auth_repository),
-    policy: AuthPolicy = Depends(),
+    token_policy: AuthTokenPolicy = Depends(),
 ) -> AuthService:
-    return AuthService(repository, policy)
+    return AuthService(repository, token_policy)

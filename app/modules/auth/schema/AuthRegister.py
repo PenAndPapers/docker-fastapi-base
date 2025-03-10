@@ -1,19 +1,20 @@
-from .AuthBase import AuthBase, AuthUser
-from .AuthToken import AuthTokenResponse
+from pydantic import Field
+from .AuthBase import AuthBase, AuthUserResponse
+from .AuthToken import TokenResponse
 from passlib.context import CryptContext
 
 
-class AuthRegister(AuthBase):
-    first_name: str
-    last_name: str
+class RegisterRequest(AuthBase):
+    first_name: str = Field(min_length=1, max_length=75)
+    last_name: str = Field(min_length=1, max_length=75)
 
-    def with_hashed_password(self, pwd_context: CryptContext) -> "AuthRegister":
+    def with_hashed_password(self, pwd_context: CryptContext) -> "RegisterRequest":
         return self.model_copy(update={"password": pwd_context.hash(self.password)})
 
     model_config = {"from_attributes": True}
 
 
-class AuthRegisterResponse(AuthUser):
-    token: AuthTokenResponse
+class RegisterResponse(AuthUserResponse):
+    token: TokenResponse
 
     model_config = {"from_attributes": True}

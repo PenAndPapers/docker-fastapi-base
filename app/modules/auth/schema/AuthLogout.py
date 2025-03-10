@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
 
-class AuthLogout(BaseModel):
+class LogoutRequest(BaseModel):
     id: int
     access_token: str
 
 
-class AuthLogoutResponse(BaseModel):
+class LogoutResponse(BaseModel):
     message: str
