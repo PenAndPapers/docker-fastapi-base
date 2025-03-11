@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends
-from .schema import UserCreate, UserUpdate, UserResponse
+from .schema import UserCreateRequest, UserUpdate, UserResponse
 from .service import UserService
 from .providers import get_user_service
 
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/user", tags=["User"])
 
 # TODO check if user is authenticated
 @router.post("", response_model=UserResponse)
-def create(data: UserCreate, service: UserService = Depends(get_user_service)):
+def create(data: UserCreateRequest, service: UserService = Depends(get_user_service)):
     pass
 
 

@@ -2,7 +2,7 @@ from typing import List
 from .UserPolicy import UserPolicy
 from ..repository.UserRepository import UserRepository
 from ..model import User
-from ..schema import UserCreate, UserUpdate
+from ..schema import UserCreateRequest, UserUpdate
 
 
 class UserService:
@@ -10,7 +10,7 @@ class UserService:
         self.repository = repository
         self.policy = policy
 
-    def create(self, data: UserCreate) -> User:
+    def create(self, data: UserCreateRequest) -> User:
         """Create a new record."""
         return self.repository.create(data)
 

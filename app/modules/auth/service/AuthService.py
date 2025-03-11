@@ -5,6 +5,7 @@ from ..constants import TokenTypeEnum
 from ..repository import AuthRepository
 from ..policy import AuthTokenPolicy, AuthIPRateLimitingPolicy, AuthMFAPolicy
 from ..schema import (
+    DeviceRequest,
     RegisterRequest,
     RegisterResponse,
     LoginRequest,
@@ -34,9 +35,14 @@ class AuthService:
 
     def register(self, data: RegisterRequest) -> RegisterResponse:
         """Register"""
-        auth_user = self.repository.register(
-            data.with_hashed_password(self.pwd_context)
-        )
+        # Keep device info for later use
+        device_info = {"device_id": data.device_id, "client_info": data.client_info}
+
+        # Hash the password and send complete data to repository
+        hashed_data = data.with_hashed_password(self.pwd_context)
+
+        # Register user (repository will handle field filtering)
+        auth_user = self.repository.register(hashed_data)
 
         if auth_user:
             # Generate token and store it
@@ -50,9 +56,16 @@ class AuthService:
                 )
             )
 
-            # Override the default token_type with the one from policy
-            stored_token.token_type = token_data.token_type
+            # Store device information
+            self.repository.store_device(
+                DeviceRequest(
+                    user_id=auth_user.id,
+                    device_id=device_info["device_id"],
+                    client_info=device_info["client_info"],
+                )
+            )
 
+            stored_token.token_type = token_data.token_type
             return RegisterResponse(
                 **auth_user.model_dump(),
                 token=stored_token,
@@ -65,7 +78,8 @@ class AuthService:
 
     def login(self, data: LoginRequest) -> LoginResponse:
         """Login"""
-        return self.repository.login(data)
+        user = self.repository.login(data)
+        print(f"\n\n\n\n{user}\n\n\n\n")
 
     def logout(self, data: LogoutRequest) -> LogoutResponse:
         """Logout"""

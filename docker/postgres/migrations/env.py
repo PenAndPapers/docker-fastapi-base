@@ -1,9 +1,10 @@
+import os
+import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
-import os
-import sys
+from app.database import Base
 
 # Add the app directory to the Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../.."))
@@ -14,7 +15,6 @@ from app.modules.user.model.User import User
 from app.modules.auth.model.AuthDevice import AuthDevice
 from app.modules.auth.model.AuthToken import AuthToken
 from app.modules.auth.model.AuthVerification import AuthVerification
-from app.database import Base
 
 # this is the Alembic Config object
 config = context.config

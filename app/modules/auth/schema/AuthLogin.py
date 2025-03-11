@@ -12,18 +12,7 @@ class LoginVerificationResponse(BaseModel):
 
 
 class LoginRequest(AuthBase):
-    device_id: str = Field(
-        ...,
-        min_length=1,
-        max_length=255,
-        example="d4f16c9a-0fb6-4a8b-a67e-46c11e51e8b1",
-    )
-    client_info: str = Field(
-        ...,
-        min_length=1,
-        max_length=255,
-        example="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0",
-    )
+    pass  # All fields inherited from AuthBase
 
 
 class LoginResponse(AuthUserResponse):

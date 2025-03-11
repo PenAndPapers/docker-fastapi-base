@@ -1,8 +1,8 @@
 """create_todo_table
 
-Revision ID: 65f348c8ac20
+Revision ID: ab1ced9bacec
 Revises:
-Create Date: 2025-03-09 09:03:26.317101
+Create Date: 2025-03-11 05:12:16.521220
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "65f348c8ac20"
+revision = "ab1ced9bacec"
 down_revision = None
 branch_labels = None
 depends_on = None
