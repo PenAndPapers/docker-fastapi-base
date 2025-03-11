@@ -9,23 +9,13 @@ from ..schema import TokenResponse
 
 
 class AuthTokenPolicy:
-    def __init__(self, user_repository):
+    def __init__(self):  # Remove user_repository parameter
         self.secret_key = app_settings.jwt_secret_key
         self.algorithm = app_settings.jwt_algorithm
         self.access_token_expire_minutes = app_settings.jwt_access_token_expire_minutes
         self.refresh_token_expire_days = app_settings.jwt_refresh_token_expire_days
-        self.user_repository = user_repository
 
     def _generate_token(self, user_id: int) -> TokenResponse:
-        # Validate user exists in database
-        user = self.user_repository.get_by_id(user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
-
-        # Generate access and refresh tokens
         access_token_expires = datetime.utcnow() + timedelta(
             minutes=self.access_token_expire_minutes
         )
@@ -34,10 +24,14 @@ class AuthTokenPolicy:
         )
 
         access_token = self._create_token(
-            data={"sub": str(user_id)}, expires_delta=access_token_expires
+            data={"sub": str(user_id)},
+            expires_delta=access_token_expires,
+            token_type=TokenTypeEnum.ACCESS,  # Explicitly set token type
         )
         refresh_token = self._create_token(
-            data={"sub": str(user_id)}, expires_delta=refresh_token_expires
+            data={"sub": str(user_id)},
+            expires_delta=refresh_token_expires,
+            token_type=TokenTypeEnum.REFRESH,  # Explicitly set token type
         )
 
         return TokenResponse(
@@ -48,44 +42,79 @@ class AuthTokenPolicy:
             token_type=TokenTypeEnum.BEARER,  # here we manually set the token type as bearer
         )
 
-    def _create_token(self, data: dict, expires_delta: datetime, token_type: TokenTypeEnum = TokenTypeEnum.ACCESS) -> str:
+    def _create_token(
+        self,
+        data: dict,
+        expires_delta: datetime,
+        token_type: TokenTypeEnum = TokenTypeEnum.ACCESS,
+    ) -> str:
         to_encode = data.copy()
-        to_encode.update({
-            "exp": expires_delta.timestamp(),
-            "iat": datetime.utcnow().timestamp(),
-            "nbf": datetime.utcnow().timestamp(),
-            "jti": str(uuid.uuid4()),
-            "iss": app_settings.app_name,
-            "aud": app_settings.app_audience,
-            "type": token_type,
-        })
+        to_encode.update(
+            {
+                "exp": expires_delta.timestamp(),
+                "iat": datetime.utcnow().timestamp(),
+                "nbf": datetime.utcnow().timestamp(),
+                "jti": str(uuid.uuid4()),
+                "iss": app_settings.app_name,
+                "aud": app_settings.app_audience,
+                "type": token_type,
+            }
+        )
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
-    def _verify_token(self, token: str, verify_exp: bool = True, token_type: TokenTypeEnum = TokenTypeEnum.ACCESS) -> str:
+    def _raise_token_error(
+        self, detail: str, status_code: int = status.HTTP_401_UNAUTHORIZED
+    ) -> None:
+        """Raise a standardized token validation error"""
+        raise HTTPException(status_code=status_code, detail=detail)
+
+    def _verify_token(
+        self,
+        token: str,
+        verify_exp: bool = True,
+        token_type: TokenTypeEnum = TokenTypeEnum.ACCESS,
+    ) -> str:
         try:
-            options = {"verify_exp": verify_exp}
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm], options=options)
-            
+            # First decode without verification to check token structure
+            unverified_payload = jwt.decode(token, options={"verify_signature": False})
+
+            # Then do full verification with our requirements
+            payload = jwt.decode(
+                token,
+                self.secret_key,
+                algorithms=[self.algorithm],
+                options={
+                    "verify_exp": verify_exp,
+                    "verify_signature": True,
+                    "verify_aud": True,
+                    "verify_iat": True,
+                    "verify_nbf": True,
+                },
+                audience=app_settings.app_audience,
+            )
+
             # Verify token type
-            if payload.get("type") != token_type:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=f"Invalid token type: expected {token_type}"
+            token_type_in_payload = payload.get("type")
+            if not token_type_in_payload:
+                self._raise_token_error("Token type missing")
+
+            if token_type_in_payload != token_type:
+                self._raise_token_error(
+                    f"Invalid token type: expected {token_type}, got {token_type_in_payload}"
                 )
-                
-            if not payload.get("sub"):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid token: missing subject claim"
-                )
-            return payload["sub"]
+
+            # Verify subject claim
+            subject = payload.get("sub")
+            if not subject:
+                self._raise_token_error("Invalid token: missing subject claim")
+
+            return subject
+
         except jwt.ExpiredSignatureError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, 
-                detail="Token has expired"
+            self._raise_token_error("Token has expired")
+        except jwt.InvalidAudienceError:
+            self._raise_token_error(
+                f"Invalid token audience: expected {app_settings.app_audience}"
             )
-        except jwt.JWTError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials"
-            )
+        except jwt.InvalidTokenError as e:
+            self._raise_token_error(f"Invalid token: {str(e)}")

@@ -20,6 +20,7 @@ class AuthRepository:
         self.token_repository = DatabaseRepository(db, UserToken)
 
     def register(self, data: RegisterRequest) -> AuthUserResponse:
+        """Register a user"""
         user = self.user_repository.create(data)
         return AuthUserResponse(
             id=user.id,
@@ -45,9 +46,10 @@ class AuthRepository:
         pass
 
     def store_token(self, data: TokenRequest) -> TokenResponse:
+        """Store a new token for a user"""
         token = self.token_repository.create(data)
         return TokenResponse(**vars(token))
 
-    def refresh_token(self, user_id: int, data: TokenRequest) -> TokenResponse:
-        print(data)
-        pass
+    def invalidate_user_tokens(self, user_id: int) -> None:
+        """Invalidate all existing tokens for a user"""
+        self.token_repository.delete_by_filter({"user_id": user_id})

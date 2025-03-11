@@ -94,3 +94,23 @@ class DatabaseRepository:
         except Exception as e:
             self.db.rollback()
             raise DatabaseError(detail=f"Error deleting item: {e}")
+
+    def delete_by_filter(self, filters: dict) -> bool:
+        """
+        Delete items matching multiple filter criteria.
+        Example: delete_by_filter({"user_id": 1, "status": "active"})
+        """
+        try:
+            query = self.query()
+            for field, value in filters.items():
+                query = query.filter(getattr(self.model, field) == value)
+
+            items = query.all()
+            for item in items:
+                self.db.delete(item)
+
+            self.db.commit()
+            return True
+        except Exception as e:
+            self.db.rollback()
+            raise DatabaseError(detail=f"Error deleting items: {e}")
