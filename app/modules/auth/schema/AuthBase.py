@@ -4,8 +4,16 @@ from app.modules.user.schema.UserBase import UserBase
 
 
 class AuthBase(BaseModel):
-    email: EmailStr
-    password: str = Field(..., min_length=8, max_length=72)
+    email: EmailStr = Field(
+        example="johndoe.test@email.com", description="Valid email address"
+    )
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=72,
+        example="P@ssw0rd123",
+        description="Password must contain uppercase, lowercase, number, and special character",
+    )
 
     model_config = {"from_attributes": True}
 

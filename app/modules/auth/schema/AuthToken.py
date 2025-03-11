@@ -1,13 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from ..constants import TokenTypeEnum
 
 
 class TokenRequest(BaseModel):
-    user_id: int
-    access_token: str
-    refresh_token: str
-    expires_at: datetime
+    user_id: int = Field(example=1)
+    access_token: str = Field(example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    refresh_token: str = Field(example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    expires_at: datetime = Field(example="2024-12-31T23:59:59")
+
+    model_config = {"from_attributes": True}
 
 
 class TokenResponse(BaseModel):

@@ -30,7 +30,13 @@ class User(Base):
     )
     deleted_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Add relationship to UserToken
-    tokens = relationship(
-        "UserToken", back_populates="user", cascade="all, delete-orphan"
+    # Relationships
+    auth_tokens = relationship(
+        "AuthToken", back_populates="user", cascade="all, delete-orphan"
+    )
+    devices = relationship(
+        "AuthDevice", back_populates="user", cascade="all, delete-orphan"
+    )
+    verifications = relationship(
+        "AuthVerification", back_populates="user", cascade="all, delete-orphan"
     )

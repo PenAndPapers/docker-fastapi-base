@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import HTTPException, status
-from app.core import app_settings
+from app.core import app_settings, UnauthorizedError
 from ..constants import TokenTypeEnum
 from ..schema import TokenResponse
 
@@ -62,11 +62,9 @@ class AuthTokenPolicy:
         )
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
-    def _raise_token_error(
-        self, detail: str, status_code: int = status.HTTP_401_UNAUTHORIZED
-    ) -> None:
+    def _raise_token_error(self, detail: str) -> None:
         """Raise a standardized token validation error"""
-        raise HTTPException(status_code=status_code, detail=detail)
+        raise UnauthorizedError(detail=detail)
 
     def _verify_token(
         self,
@@ -118,3 +116,32 @@ class AuthTokenPolicy:
             )
         except jwt.InvalidTokenError as e:
             self._raise_token_error(f"Invalid token: {str(e)}")
+
+    def verify_token_refresh_eligibility(self, access_token: str) -> None:
+        """
+        Verifies if the access token is eligible for refresh (>75% of lifetime elapsed)
+        Raises UnauthorizedError if token is not eligible for refresh
+        """
+        try:
+            token_exp_percentage = self._get_token_expiry_percentage(access_token)
+            if token_exp_percentage < 75:
+                raise UnauthorizedError(
+                    detail="Access token is not close enough to expiry for refresh"
+                )
+        except jwt.InvalidTokenError:
+            pass  # Continue if access token is invalid/expired
+
+    def _get_token_expiry_percentage(self, token: str) -> float:
+        """Calculate what percentage of the token's lifetime has elapsed"""
+        payload = jwt.decode(token, options={"verify_signature": False})
+        exp = payload.get("exp")
+        iat = payload.get("iat")
+
+        if not (exp and iat):
+            return 100
+
+        now = datetime.utcnow().timestamp()
+        total_lifetime = exp - iat
+        time_elapsed = now - iat
+
+        return (time_elapsed / total_lifetime) * 100

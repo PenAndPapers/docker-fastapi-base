@@ -1,5 +1,3 @@
-from .enums import TokenTypeEnum
+from .enums import TokenTypeEnum, VerificationTypeEnum
 
-__all__ = [
-    "TokenTypeEnum",
-]
+__all__ = ["TokenTypeEnum", "VerificationTypeEnum"]

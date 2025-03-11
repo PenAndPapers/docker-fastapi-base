@@ -1,8 +1,9 @@
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
-from .AuthTokenPolicy import AuthTokenPolicy
+from app.core import UnauthorizedError
 from ..constants import TokenTypeEnum
-from ..repository.AuthRepository import AuthRepository
+from ..repository import AuthRepository
+from ..policy import AuthTokenPolicy, AuthIPRateLimitingPolicy, AuthMFAPolicy
 from ..schema import (
     RegisterRequest,
     RegisterResponse,
@@ -16,9 +17,17 @@ from ..schema import (
 
 
 class AuthService:
-    def __init__(self, repository: AuthRepository, token_policy: AuthTokenPolicy):
+    def __init__(
+        self,
+        repository: AuthRepository,
+        token_policy: AuthTokenPolicy,
+        ip_rate_limiting_policy: AuthIPRateLimitingPolicy = None,
+        mfa_policy: AuthMFAPolicy = None,
+    ):
         self.repository = repository
         self.token_policy = token_policy
+        self.ip_policy = ip_rate_limiting_policy
+        self.mfa_policy = mfa_policy
         self.pwd_context = CryptContext(
             schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=14
         )
@@ -64,17 +73,17 @@ class AuthService:
 
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
         """Refresh token and generate new access token"""
-        # 1. Verify tokens belong to the claimed user
+        # 1. Verify access token refresh eligibility first
+        self.token_policy.verify_token_refresh_eligibility(data.access_token)
+
+        # 2. Only if eligible, verify refresh token
         user_id_from_token = self.token_policy._verify_token(
             data.refresh_token, token_type=TokenTypeEnum.REFRESH
         )
 
-        # 2. Ensure token belongs to the requesting user
+        # 3. Ensure token belongs to the requesting user
         if int(user_id_from_token) != data.user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token does not belong to the user",
-            )
+            raise UnauthorizedError(detail="Token does not belong to the user")
 
         # 3. Invalidate old tokens
         self.repository.invalidate_user_tokens(data.user_id)

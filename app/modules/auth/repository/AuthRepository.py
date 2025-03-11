@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from ..model import AuthDevice, AuthToken, AuthVerification
 from ..schema import (
     AuthUserResponse,
     RegisterRequest,
@@ -10,14 +11,14 @@ from ..schema import (
     TokenResponse,
 )
 from app.database import DatabaseRepository
-from app.modules.user.model import User, UserToken
+from app.modules.user.model import User
 
 
 class AuthRepository:
     def __init__(self, db: Session):
         self.db = db
         self.user_repository = DatabaseRepository(db, User)
-        self.token_repository = DatabaseRepository(db, UserToken)
+        self.token_repository = DatabaseRepository(db, AuthToken)
 
     def register(self, data: RegisterRequest) -> AuthUserResponse:
         """Register a user"""
@@ -38,10 +39,12 @@ class AuthRepository:
         )
 
     def login(self, data: LoginRequest) -> LoginResponse:
+        """Login a user"""
         print(data)
         pass
 
     def logout(self, data: LogoutRequest) -> LogoutResponse:
+        """Logout a user"""
         print(data)
         pass
 
