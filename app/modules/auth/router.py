@@ -8,6 +8,7 @@ from .schema import (
     LogoutResponse,
     TokenRequest,
     TokenResponse,
+    VerificationRequest
 )
 from .service import AuthService
 from .providers import get_auth_service
@@ -27,6 +28,13 @@ def login(
     data: LoginRequest, service: AuthService = Depends(get_auth_service)
 ) -> LoginResponse:
     return service.login(data)
+
+
+@router.post("/one-time-pin", response_model=RegisterResponse)
+def one_time_pin(
+    data: VerificationRequest, service: AuthService = Depends(get_auth_service)
+) -> RegisterResponse:
+    return service.one_time_pin(data)
 
 
 @router.post("/logout", response_model=LogoutResponse)

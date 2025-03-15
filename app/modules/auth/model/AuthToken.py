@@ -15,3 +15,11 @@ class AuthToken(Auth):
 
     # Relationship to user
     user = relationship("User", back_populates="auth_tokens")
+
+    # Relationship to verification
+    verification = relationship(
+        "AuthVerification", 
+        uselist=False,  # one-to-one relationship
+        back_populates="token",
+        cascade="all, delete-orphan"
+    )

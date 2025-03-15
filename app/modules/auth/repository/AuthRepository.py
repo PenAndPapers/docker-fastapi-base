@@ -1,6 +1,11 @@
+from typing import Union
+from hashlib import sha256
+from time import time
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
+from ..constants import VerificationTypeEnum
 from ..model import AuthDevice, AuthToken, AuthVerification
 from ..schema import (
     AuthUserResponse,
@@ -13,6 +18,7 @@ from ..schema import (
     LogoutResponse,
     TokenRequest,
     TokenResponse,
+    VerificationResponse
 )
 from app.database import DatabaseRepository
 from app.modules.user.model import User
@@ -55,7 +61,11 @@ class AuthRepository:
     def login(self, data: LoginRequest) -> LoginResponse:
         """Verify user credentials"""
         # Use direct column comparison instead of dict
-        user = self.db.query(User).filter(User.email == data.email).first()
+        user = self.db.query(User).filter(
+            User.email == data.email,
+            User.deleted_at.is_(None), # Check if account is not deleted
+            User.is_verified.is_(True) # Check if account is verified
+        ).first()
 
         if not user or not self.pwd_context.verify(data.password, user.password):
             raise UnauthorizedError(detail="Invalid credentials")
@@ -77,7 +87,7 @@ class AuthRepository:
 
     def logout(self, data: LogoutRequest) -> LogoutResponse:
         """Logout a user"""
-        print(data)
+        # TODO: Implement
         pass
 
     def store_token(self, data: TokenRequest) -> TokenResponse:
@@ -99,3 +109,38 @@ class AuthRepository:
         """Invalidate all existing devices for a user"""
         self.device_repository.delete_by_filter({"user_id": user_id})
         self.db.flush()
+
+    def store_verification_code(
+        self,
+        user: Union[RegisterResponse, LoginResponse],
+        type: VerificationTypeEnum,
+        device_id: int
+    ) -> VerificationResponse:
+        """Store verification code"""
+
+       # Generate a unique seed using user ID, token, timestamp and a random nonce
+        nonce = secrets.token_hex(16)  # Add extra randomness
+        seed = f"{user.id}-{user.token.access_token}-{int(time())}-{nonce}"
+        
+        # Generate hash and ensure 6 unique digits
+        hash_bytes = sha256(seed.encode()).digest()
+        num = int.from_bytes(hash_bytes, byteorder='big')
+
+        # Ensure 6 digits with leading zeros
+        verification_code = str(num)[-6:].zfill(6)
+
+        verification = self.verification_repository.create({
+            "user_id": user_id,
+            "token_id": access_token,
+            "device_id": device_id,
+            "code": verification_code,
+            "type": type,
+            "expires_at": datetime.utcnow() + timedelta(minutes=15),
+        })
+
+        return VerificationResponse(**vars(verification))
+
+    def invalidate_verification_code(self) -> None:
+        """Invalidate verification code"""
+        # TODO: Implement
+        pass

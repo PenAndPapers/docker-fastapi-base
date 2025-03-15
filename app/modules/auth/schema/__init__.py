@@ -4,6 +4,7 @@ from .AuthRegister import RegisterRequest, RegisterResponse
 from .AuthLogin import LoginVerificationResponse, LoginRequest, LoginResponse
 from .AuthLogout import LogoutRequest, LogoutResponse
 from .AuthToken import TokenRequest, TokenResponse
+from .AuthVerification import VerificationRequest, VerificationResponse
 
 __all__ = [
     "AuthBase",
@@ -20,4 +21,6 @@ __all__ = [
     "LogoutResponse",
     "TokenRequest",
     "TokenResponse",
+    "VerificationRequest",
+    "VerificationResponse"
 ]

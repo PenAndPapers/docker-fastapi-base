@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
-from app.core import UnauthorizedError, logger
-from ..constants import TokenTypeEnum
+from app.core import UnauthorizedError
+from ..constants import TokenTypeEnum. VerificationTypeEnum
 from ..repository import AuthRepository
 from ..policy import AuthTokenPolicy, AuthIPRateLimitingPolicy, AuthMFAPolicy
 from ..schema import (
@@ -15,6 +15,8 @@ from ..schema import (
     LogoutResponse,
     TokenRequest,
     TokenResponse,
+    VerificationRequest,
+    VerificationResponse
 )
 
 
@@ -47,22 +49,27 @@ class AuthService:
 
         # Register user (repository will handle field filtering)
         auth_user = self.repository.register(hashed_data)
-        logger.info(f"User registered: {auth_user}")
 
         if auth_user:
-            self._handle_device(auth_user.id, device_info)
-            stored_token = self._handle_token(auth_user.id)
+            stored_device = self._handle_device(auth_user.id, device_info)
 
-            return RegisterResponse(
+            # We set to False as user need to verifiy their email
+            stored_token = self._handle_token(auth_user.id, False)
+
+            user = RegisterResponse(
                 **auth_user.model_dump(),
                 token=stored_token,
             )
+
+            self.repository.store_verification_code(user, VerificationTypeEnum.EMAIL_SIGNUP, stored_device.id)
+
+            return user
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Register failed",
         )
-
+        
     def login(self, data: LoginRequest) -> LoginResponse:
         """Login"""
         auth_user = self.repository.login(data)
@@ -73,14 +80,19 @@ class AuthService:
                 client_info=data.client_info,
             )
             self._handle_device(auth_user.id, device_info)
-            stored_token = self._handle_token(auth_user.id)
 
-            return LoginResponse(
+            # We set to False as user need to verifiy their email
+            stored_token = self._handle_token(auth_user.id, False)
+
+            user = LoginResponse(
                 **auth_user.model_dump(),
                 token=stored_token,
-                varification=None,
-                requires_verification=False,
+                requires_verification=True,
             )
+
+            self.store_verification_code(user, VerificationTypeEnum.EMAIL_LOGIN)
+
+            return user
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -91,10 +103,25 @@ class AuthService:
         """Logout"""
         return self.repository.logout(data)
 
+    def one_time_pin(self, data: VerificationRequest) -> RegisterResponse:
+    """Verify registration using tokens sent via email/sms"""
+    # TODO
+    # 1. Get verification code from database using the token
+    # 2. Verify code that is valid
+    # 3. Verify code that is not expired
+    # 4. Verify code is associated with user id and access token
+    # 5. Update user status to verified
+    # 6. Invalidate all existing tokens for the user
+    # 7. Generate new token for the user
+    # 8. Store user token
+    # 9. Return user information
+    # 10. Return user token
+    # 11. Return user status
+    
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
         """Refresh token and generate new access token"""
         # Verify access token refresh eligibility first
-        self.token_policy.verify_token_refresh_eligibility(data.access_token)
+        self.token_policy._verify_token_refresh_eligibility(data.access_token)
 
         # Only if eligible, verify refresh token
         user_id_from_token = self.token_policy._verify_token(
@@ -107,14 +134,14 @@ class AuthService:
 
         return self._handle_token(data.user_id)
 
-    def _handle_token(self, user_id: int) -> TokenResponse:
+    def _handle_token(self, user_id: int, is_token_verified: bool = False) -> TokenResponse:
         """Handle user token generation and storage"""
 
         # Invalidate existing user tokens
         self.repository.invalidate_user_tokens(user_id)
 
         # Generate new token for the user
-        token_data = self.token_policy._generate_token(user_id)
+        token_data = self.token_policy._generate_token(user_id, is_token_verified)
 
         # Store user token
         stored_token = self.repository.store_token(
@@ -131,17 +158,19 @@ class AuthService:
 
         return stored_token
 
-    def _handle_device(self, user_id: int, device: DeviceInfo) -> None:
+    def _handle_device(self, user_id: int, device: DeviceInfo) -> DeviceResponse:
         """Handle user device information and storage"""
 
         # Invalidate existing user devices
         self.repository.invalidate_user_devices(user_id)
 
         # Store device information
-        self.repository.store_device(
+        stored_device = self.repository.store_device(
             DeviceRequest(
                 user_id=user_id,
                 device_id=device.device_id,
                 client_info=device.client_info,
             )
         )
+
+        return stored_device

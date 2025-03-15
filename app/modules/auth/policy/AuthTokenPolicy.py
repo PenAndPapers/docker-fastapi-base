@@ -15,7 +15,11 @@ class AuthTokenPolicy:
         self.access_token_expire_minutes = app_settings.jwt_access_token_expire_minutes
         self.refresh_token_expire_days = app_settings.jwt_refresh_token_expire_days
 
-    def _generate_token(self, user_id: int) -> TokenResponse:
+    def _raise_token_error(self, detail: str) -> None:
+        """Raise a standardized token validation error"""
+        raise UnauthorizedError(detail=detail)
+
+    def _generate_token(self, user_id: int, is_token_verified: bool = False) -> TokenResponse:
         access_token_expires = datetime.utcnow() + timedelta(
             minutes=self.access_token_expire_minutes
         )
@@ -24,12 +28,12 @@ class AuthTokenPolicy:
         )
 
         access_token = self._create_token(
-            data={"sub": str(user_id)},
+            data={"sub": str(user_id), "verified": is_token_verified},
             expires_delta=access_token_expires,
             token_type=TokenTypeEnum.ACCESS,  # Explicitly set token type
         )
         refresh_token = self._create_token(
-            data={"sub": str(user_id)},
+            data={"sub": str(user_id), "verified": is_token_verified},
             expires_delta=refresh_token_expires,
             token_type=TokenTypeEnum.REFRESH,  # Explicitly set token type
         )
@@ -61,10 +65,6 @@ class AuthTokenPolicy:
             }
         )
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
-
-    def _raise_token_error(self, detail: str) -> None:
-        """Raise a standardized token validation error"""
-        raise UnauthorizedError(detail=detail)
 
     def _verify_token(
         self,
@@ -117,7 +117,7 @@ class AuthTokenPolicy:
         except jwt.InvalidTokenError as e:
             self._raise_token_error(f"Invalid token: {str(e)}")
 
-    def verify_token_refresh_eligibility(self, access_token: str) -> None:
+    def _verify_token_refresh_eligibility(self, access_token: str) -> None:
         """
         Verifies if the access token is eligible for refresh (>75% of lifetime elapsed)
         Raises UnauthorizedError if token is not eligible for refresh
