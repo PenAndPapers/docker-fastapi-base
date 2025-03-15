@@ -10,6 +10,7 @@ from .exceptions import (
 )
 from .pagination import BasePaginationParams, BasePaginatedResponse, BaseSortOrder
 from .redis import get_redis, cache_response
+from .logger import logger  # Add this line
 
 __all__ = [
     "app_settings",
@@ -25,4 +26,5 @@ __all__ = [
     "UnauthorizedError",
     "get_redis",
     "cache_response",
+    "logger",
 ]

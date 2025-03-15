@@ -52,7 +52,7 @@ class AuthRepository:
             deleted_at=user.deleted_at,
         )
 
-    def login(self, data: LoginRequest) -> AuthUserResponse:
+    def login(self, data: LoginRequest) -> LoginResponse:
         """Verify user credentials"""
         # Use direct column comparison instead of dict
         user = self.db.query(User).filter(User.email == data.email).first()
@@ -85,11 +85,17 @@ class AuthRepository:
         token = self.token_repository.create(data)
         return TokenResponse(**vars(token))
 
+    def invalidate_user_tokens(self, user_id: int) -> None:
+        """Invalidate all existing tokens for a user"""
+        self.token_repository.delete_by_filter({"user_id": user_id})
+        self.db.flush()
+
     def store_device(self, data: DeviceRequest) -> DeviceResponse:
         """Store device info"""
         device = self.device_repository.create(data)
         return DeviceResponse(**vars(device))
 
-    def invalidate_user_tokens(self, user_id: int) -> None:
-        """Invalidate all existing tokens for a user"""
-        self.token_repository.delete_by_filter({"user_id": user_id})
+    def invalidate_user_devices(self, user_id: int) -> None:
+        """Invalidate all existing devices for a user"""
+        self.device_repository.delete_by_filter({"user_id": user_id})
+        self.db.flush()

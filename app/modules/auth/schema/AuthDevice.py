@@ -2,8 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class DeviceRequest(BaseModel):
-    user_id: int | None = Field(default=None, description="User ID")
+class DeviceInfo(BaseModel):
     device_id: str = Field(
         ...,
         min_length=1,
@@ -18,6 +17,10 @@ class DeviceRequest(BaseModel):
         example="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
         description="Client browser/app information",
     )
+
+
+class DeviceRequest(DeviceInfo):
+    user_id: int | None = Field(default=None, description="User ID")
 
     model_config = {"from_attributes": True}
 
