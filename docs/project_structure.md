@@ -27,6 +27,9 @@ This project follows a modular, clean architecture pattern with clear separation
 │   │     ├── model/                    # Database models/entities, defines table structure
 │   │     │   └── TodoModel.py
 │   │     │
+│   │     ├── policy/                   # Defines business rules and workflows
+│   │     │   └── TodoPolicy.py         
+│   │     │
 │   │     ├── providers/                # Dependency injection, service locator
 │   │     │   └── services.py           # Database connection and session management, Service factory and dependency wiring
 │   │     │
