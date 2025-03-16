@@ -26,7 +26,7 @@ class AuthVerification(Auth):
     is_verified = Column(Boolean, default=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     verified_at = Column(DateTime(timezone=True), nullable=True)
-    attempts = Column(Integer, default=0)  # Track failed attempts
+    attempts = Column(Integer, default=0, CheckConstraint("attempts <= 3"))  # Track failed attempts (max 3)
 
     __table_args__ = (
         Index("idx_auth_verifications_user_type", "user_id", "type"),

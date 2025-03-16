@@ -34,5 +34,6 @@ class VerificationRequest(BaseModel):
 
   model_config = {"from_attributes": True}
 
+
 class VerificationResponse(BaseModel):
   pass

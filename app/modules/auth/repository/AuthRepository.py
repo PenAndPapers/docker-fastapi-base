@@ -95,6 +95,11 @@ class AuthRepository:
         token = self.token_repository.create(data)
         return TokenResponse(**vars(token))
 
+    def get_token(self, access_token: str) -> TokenResponse:
+        """Get a token by access token"""
+        token = self.token_repository.get_by_filter({"access_token": access_token})
+        return TokenResponse(**vars(token))
+
     def invalidate_user_tokens(self, user_id: int) -> None:
         """Invalidate all existing tokens for a user"""
         self.token_repository.delete_by_filter({"user_id": user_id})
@@ -140,6 +145,15 @@ class AuthRepository:
 
         return VerificationResponse(**vars(verification))
 
+    def get_verification_code(self, user_id: int, verification_code: str) -> VerificationResponse:
+        """Get verification code"""
+        verification = self.verification_repository.get_by_filter({
+            "user_id": user_id,
+            "code": verification_code,
+            "is_verified": False
+        })
+        return verification
+    
     def invalidate_verification_code(self) -> None:
         """Invalidate verification code"""
         # TODO: Implement

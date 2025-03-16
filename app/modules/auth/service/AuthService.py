@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
@@ -79,7 +80,7 @@ class AuthService:
                 device_id=data.device_id,
                 client_info=data.client_info,
             )
-            self._handle_device(auth_user.id, device_info)
+            stored_device = self._handle_device(auth_user.id, device_info)
 
             # We set to False as user need to verifiy their email
             stored_token = self._handle_token(auth_user.id, False)
@@ -90,7 +91,7 @@ class AuthService:
                 requires_verification=True,
             )
 
-            self.store_verification_code(user, VerificationTypeEnum.EMAIL_LOGIN)
+            self.store_verification_code(user, VerificationTypeEnum.EMAIL_LOGIN, stored_device.id)
 
             return user
 
@@ -104,20 +105,48 @@ class AuthService:
         return self.repository.logout(data)
 
     def one_time_pin(self, data: VerificationRequest) -> RegisterResponse:
-    """Verify registration using tokens sent via email/sms"""
-    # TODO
-    # 1. Get verification code from database using the token
-    # 2. Verify code that is valid
-    # 3. Verify code that is not expired
-    # 4. Verify code is associated with user id and access token
-    # 5. Update user status to verified
-    # 6. Invalidate all existing tokens for the user
-    # 7. Generate new token for the user
-    # 8. Store user token
-    # 9. Return user information
-    # 10. Return user token
-    # 11. Return user status
-    
+        """Verify registration using tokens sent via email/sms"""
+
+         # check if verification code exists
+        verification = self.repository.get_verification_code(data.user_id, data.verification_code)
+        if not verification:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code"
+            )
+
+        if verification.attempts >= 3:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Too many attempts"
+            )
+
+        # check if verification code is associated with access token and user
+        token = self.repository.get_token(data.access_token)
+        if not token or not(token.user_id == data.user_id and verification.access_token == data.access_token):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code"
+            )
+
+        # check if code already expired
+        now = datetime.utcnow().timestamp()
+        expires_at = verification.expires_at.timestamp()
+        is_expired = now > expires_at
+        if is_expired:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code"
+            )
+
+        # TODO
+        # 1. Get verification code from database using the token
+        # 2. Verify code that is valid
+        # 3. Verify code that is not expired
+        # 4. Verify code is associated with user id and access token
+        # 5. Update user status to verified
+        # 6. Invalidate all existing tokens for the user
+            
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
         """Refresh token and generate new access token"""
         # Verify access token refresh eligibility first
