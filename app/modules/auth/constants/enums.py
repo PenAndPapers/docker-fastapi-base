@@ -16,3 +16,4 @@ class VerificationTypeEnum(str, Enum):
     SMS_RECOVERY = "sms_recovery"  # Password recovery via SMS
     MFA_TOTP = "mfa_totp"  # Time-based OTP (Google Authenticator)
     MFA_BACKUP = "mfa_backup"  # Backup codes for MFA
+    OTP_LOGIN = "otp"  # One-time password

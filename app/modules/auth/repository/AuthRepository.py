@@ -152,7 +152,13 @@ class AuthRepository:
             "code": verification_code,
             "is_verified": False
         })
-        return verification
+        return VerificationResponse(**vars(verification))
+
+    def update_verification_code(self, verification: VerificationResponse) -> VerificationResponse:
+        """Update verification code"""
+        updated_veridication = self.verification_repository.update(verification.id, verification)
+
+        return VerificationResponse(**vars(updated_veridication))
     
     def invalidate_verification_code(self) -> None:
         """Invalidate verification code"""

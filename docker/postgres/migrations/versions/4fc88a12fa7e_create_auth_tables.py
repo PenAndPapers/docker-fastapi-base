@@ -66,6 +66,7 @@ def upgrade() -> None:
                 "SMS_RECOVERY",
                 "MFA_TOTP",
                 "MFA_BACKUP",
+                "OTP_LOGIN",
                 name="verificationtypeenum",
             ),
             nullable=False,

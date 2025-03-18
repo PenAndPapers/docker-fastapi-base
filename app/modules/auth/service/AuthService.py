@@ -121,14 +121,6 @@ class AuthService:
                 detail="Too many attempts"
             )
 
-        # check if verification code is associated with access token and user
-        token = self.repository.get_token(data.access_token)
-        if not token or not(token.user_id == data.user_id and verification.access_token == data.access_token):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code"
-            )
-
         # check if code already expired
         now = datetime.utcnow().timestamp()
         expires_at = verification.expires_at.timestamp()
@@ -139,13 +131,34 @@ class AuthService:
                 detail="Invalid verification code"
             )
 
-        # TODO
-        # 1. Get verification code from database using the token
-        # 2. Verify code that is valid
-        # 3. Verify code that is not expired
-        # 4. Verify code is associated with user id and access token
-        # 5. Update user status to verified
-        # 6. Invalidate all existing tokens for the user
+        # check if verification code is associated with access token and user
+        token = self.repository.get_token(data.access_token)
+        if not token or not(token.user_id == data.user_id and verification.access_token == data.access_token):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code"
+            )
+
+        # update virifcation code status to verified and pass to repository
+        verification.is_verified = True
+        verification.verified_at = datetime.utcnow()
+
+        # update verification code status to verified
+        updated_verification = self.repository.update_verification_code(verification)
+
+        if not updated_verification:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code"
+            )
+
+        # invalidate all existing tokens for the user
+        self.repository.invalidate_user_tokens(data.user_id)
+
+        # generate new access token
+        new_token = self._handle_token(data.user_id, True)
+
+        return new_token
             
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
         """Refresh token and generate new access token"""
