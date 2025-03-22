@@ -81,6 +81,58 @@ class AuthService:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Register failed",
         )
+        """Logout"""
+        return self.repository.logout(data)
+
+    def one_time_pin(self, data: OneTimePinRequest) -> TokenResponse:
+        """Verify registration using tokens sent via email/sms"""
+        # First decode and verify the access token to get user info
+        try:
+            payload = self.token_policy._verify_token(
+                data.access_token, 
+                token_type=TokenTypeEnum.ACCESS
+            )
+            user_id = int(payload)  # payload contains the user_id from sub claim
+        except UnauthorizedError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid access token"
+            )
+
+        # Check if verification code exists and is valid
+        verification = self.repository.get_verification_code(
+            user_id, 
+            data.verification_code
+        )
+        if not verification:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code"
+            )
+
+        # Validate attempts and expiration
+        if verification.attempts >= 3:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Too many attempts"
+            )
+
+        if datetime.utcnow() > verification.expires_at:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Verification code expired"
+            )
+
+        # Mark verification as complete
+        verification.is_verified = True
+        verification.verified_at = datetime.utcnow()
+        self.repository.update_verification_code(verification)
+
+        # Generate new token with verified status
+        user = self.repository.get_user(user_id)  # You'll need to add this method
+        new_token = self._handle_token(user_id, user.email, True)
+
+        return TokenResponse(**vars(new_token))
 
     def login(self, data: LoginRequest) -> LoginResponse:
         """Login"""
@@ -115,67 +167,7 @@ class AuthService:
 
     def logout(self, data: LogoutRequest) -> LogoutResponse:
         """Logout"""
-        return self.repository.logout(data)
-
-    def one_time_pin(self, data: OneTimePinRequest) -> RegisterResponse:
-        """Verify registration using tokens sent via email/sms"""
-
-        # check if verification code exists
-        verification = self.repository.get_verification_code(
-            data.user_id, data.verification_code
-        )
-        if not verification:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code",
-            )
-
-        if verification.attempts >= 3:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Too many attempts"
-            )
-
-        # check if code already expired
-        now = datetime.utcnow().timestamp()
-        expires_at = verification.expires_at.timestamp()
-        is_expired = now > expires_at
-        if is_expired:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code",
-            )
-
-        # check if verification code is associated with access token and user
-        token = self.repository.get_token(data.access_token)
-        if not token or not (
-            token.user_id == data.user_id
-            and verification.access_token == data.access_token
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code",
-            )
-
-        # update virifcation code status to verified and pass to repository
-        verification.is_verified = True
-        verification.verified_at = datetime.utcnow()
-
-        # update verification code status to verified
-        updated_verification = self.repository.update_verification_code(verification)
-
-        if not updated_verification:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code",
-            )
-
-        # invalidate all existing tokens for the user
-        self.repository.invalidate_user_tokens(data.user_id)
-
-        # generate new access token
-        new_token = self._handle_token(data.user_id, True)
-
-        return new_token
+        pass
 
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
         """Refresh token and generate new access token"""

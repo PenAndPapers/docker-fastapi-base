@@ -162,15 +162,15 @@ class AuthRepository:
     ) -> VerificationResponse:
         """Get verification code and increment attempt counter"""
         verification = self.verification_repository.get_by_filter(
-            {"user_id": user_id, "code": verification_code, "is_verified": False}
+            {"user_id": user_id, "is_verified": False}
         )
 
-        if verification:
-            # Increment attempts counter
+        if verification and verification.code != verification_code:
+            # Increment attempts counter only when code is found but incorrect
             verification.attempts += 1
             self.verification_repository.update(verification.id, verification)
 
-        return VerificationResponse(**vars(verification))
+        return VerificationResponse(**vars(verification)) if verification else None
 
     def update_verification_code(
         self, verification: VerificationResponse
