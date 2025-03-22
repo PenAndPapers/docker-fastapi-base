@@ -1,3 +1,4 @@
+import secrets
 from typing import Union
 from hashlib import sha256
 from time import time
@@ -12,13 +13,16 @@ from ..schema import (
     DeviceRequest,
     DeviceResponse,
     RegisterRequest,
+    RegisterResponse,
     LoginRequest,
     LoginResponse,
     LogoutRequest,
     LogoutResponse,
+    Token,
     TokenRequest,
     TokenResponse,
-    VerificationResponse
+    VerificationResponse,
+    VerificationRequest,
 )
 from app.database import DatabaseRepository
 from app.modules.user.model import User
@@ -61,11 +65,15 @@ class AuthRepository:
     def login(self, data: LoginRequest) -> LoginResponse:
         """Verify user credentials"""
         # Use direct column comparison instead of dict
-        user = self.db.query(User).filter(
-            User.email == data.email,
-            User.deleted_at.is_(None), # Check if account is not deleted
-            User.is_verified.is_(True) # Check if account is verified
-        ).first()
+        user = (
+            self.db.query(User)
+            .filter(
+                User.email == data.email,
+                User.deleted_at.is_(None),  # Check if account is not deleted
+                User.is_verified.is_(True),  # Check if account is verified
+            )
+            .first()
+        )
 
         if not user or not self.pwd_context.verify(data.password, user.password):
             raise UnauthorizedError(detail="Invalid credentials")
@@ -90,10 +98,10 @@ class AuthRepository:
         # TODO: Implement
         pass
 
-    def store_token(self, data: TokenRequest) -> TokenResponse:
+    def store_token(self, data: TokenRequest) -> Token:
         """Store a new token for a user"""
         token = self.token_repository.create(data)
-        return TokenResponse(**vars(token))
+        return Token(**vars(token))
 
     def get_token(self, access_token: str) -> TokenResponse:
         """Get a token by access token"""
@@ -118,48 +126,62 @@ class AuthRepository:
     def store_verification_code(
         self,
         user: Union[RegisterResponse, LoginResponse],
+        token_id: int,
+        device_id: int,
         type: VerificationTypeEnum,
-        device_id: int
     ) -> VerificationResponse:
         """Store verification code"""
-
-       # Generate a unique seed using user ID, token, timestamp and a random nonce
+        # Generate a unique seed using user ID, token, timestamp and a random nonce
         nonce = secrets.token_hex(16)  # Add extra randomness
         seed = f"{user.id}-{user.token.access_token}-{int(time())}-{nonce}"
-        
+
         # Generate hash and ensure 6 unique digits
         hash_bytes = sha256(seed.encode()).digest()
-        num = int.from_bytes(hash_bytes, byteorder='big')
+        num = int.from_bytes(hash_bytes, byteorder="big")
 
-        # Ensure 6 digits with leading zeros
-        verification_code = str(num)[-6:].zfill(6)
+        # Ensure exactly 6 digits
+        verification_code = format(int(str(num)[-6:]), "06d")
 
-        verification = self.verification_repository.create({
-            "user_id": user_id,
-            "token_id": access_token,
-            "device_id": device_id,
-            "code": verification_code,
-            "type": type,
-            "expires_at": datetime.utcnow() + timedelta(minutes=15),
-        })
+        verification_data = VerificationRequest(
+            user_id=user.id,
+            token_id=token_id,
+            device_id=device_id,
+            code=verification_code,
+            type=type,
+            expires_at=datetime.utcnow() + timedelta(minutes=15),
+            attempts=0,
+            is_verified=False,
+            verified_at=None,
+        )
+
+        verification = self.verification_repository.create(verification_data)
+        return VerificationResponse(**vars(verification))
+
+    def get_verification_code(
+        self, user_id: int, verification_code: str
+    ) -> VerificationResponse:
+        """Get verification code and increment attempt counter"""
+        verification = self.verification_repository.get_by_filter(
+            {"user_id": user_id, "code": verification_code, "is_verified": False}
+        )
+
+        if verification:
+            # Increment attempts counter
+            verification.attempts += 1
+            self.verification_repository.update(verification.id, verification)
 
         return VerificationResponse(**vars(verification))
 
-    def get_verification_code(self, user_id: int, verification_code: str) -> VerificationResponse:
-        """Get verification code"""
-        verification = self.verification_repository.get_by_filter({
-            "user_id": user_id,
-            "code": verification_code,
-            "is_verified": False
-        })
-        return VerificationResponse(**vars(verification))
-
-    def update_verification_code(self, verification: VerificationResponse) -> VerificationResponse:
+    def update_verification_code(
+        self, verification: VerificationResponse
+    ) -> VerificationResponse:
         """Update verification code"""
-        updated_veridication = self.verification_repository.update(verification.id, verification)
+        updated_veridication = self.verification_repository.update(
+            verification.id, verification
+        )
 
         return VerificationResponse(**vars(updated_veridication))
-    
+
     def invalidate_verification_code(self) -> None:
         """Invalidate verification code"""
         # TODO: Implement

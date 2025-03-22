@@ -26,6 +26,7 @@ class DeviceRequest(DeviceInfo):
 
 
 class DeviceResponse(BaseModel):
+    id: int = Field(..., description="Device ID")
     user_id: int = Field(..., description="User ID")
     device_id: str = Field(..., description="Device identifier")
     client_info: str = Field(..., description="Client information")

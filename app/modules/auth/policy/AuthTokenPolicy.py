@@ -19,7 +19,9 @@ class AuthTokenPolicy:
         """Raise a standardized token validation error"""
         raise UnauthorizedError(detail=detail)
 
-    def _generate_token(self, user_id: int, is_token_verified: bool = False) -> TokenResponse:
+    def _generate_token(
+        self, user_id: int, is_token_verified: bool = False
+    ) -> TokenResponse:
         access_token_expires = datetime.utcnow() + timedelta(
             minutes=self.access_token_expire_minutes
         )

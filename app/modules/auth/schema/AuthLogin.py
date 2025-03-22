@@ -14,18 +14,19 @@ class LoginVerificationResponse(BaseModel):
 class LoginRequest(AuthBase):
     pass  # All fields inherited from AuthBase
 
+
 class VerifyLoginRequest(AuthBase):
     access_token: str = Field(
         min_length=15,
         max_length=255,
         example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        description="Access token from verification email"
+        description="Access token from verification email",
     )
     verification_code: str = Field(
         min_length=1,
         max_length=6,
         example="123456",
-        description="Verification code from verification email"
+        description="Verification code from verification email",
     )
     device_id: str = Field(
         min_length=1,
@@ -41,6 +42,7 @@ class VerifyLoginRequest(AuthBase):
     )
 
     model_config = {"from_attributes": True}
+
 
 class LoginResponse(AuthUserResponse):
     token: TokenResponse | None = None  # Only provided after OTP verification

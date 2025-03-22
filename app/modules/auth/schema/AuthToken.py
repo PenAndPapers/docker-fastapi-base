@@ -3,6 +3,17 @@ from datetime import datetime
 from ..constants import TokenTypeEnum
 
 
+class Token(BaseModel):
+    id: int
+    user_id: int
+    access_token: str
+    refresh_token: str
+    expires_at: datetime
+    token_type: str = TokenTypeEnum.BEARER.value
+
+    model_config = {"from_attributes": True}
+
+
 class TokenRequest(BaseModel):
     user_id: int = Field(example=1)
     access_token: str = Field(example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")

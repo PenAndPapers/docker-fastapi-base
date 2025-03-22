@@ -9,6 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     Enum,
     Boolean,
+    CheckConstraint,
 )
 from datetime import datetime
 from .Auth import Auth
@@ -26,16 +27,17 @@ class AuthVerification(Auth):
     is_verified = Column(Boolean, default=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     verified_at = Column(DateTime(timezone=True), nullable=True)
-    attempts = Column(Integer, default=0, CheckConstraint("attempts <= 3"))  # Track failed attempts (max 3)
+    attempts = Column(Integer, default=0)  # Track failed attempts (max 3)
 
     __table_args__ = (
         Index("idx_auth_verifications_user_type", "user_id", "type"),
         Index("idx_auth_verifications_expires", "expires_at"),
         Index("idx_auth_verifications_token", "token_id"),
         Index("idx_auth_verifications_device", "device_id"),
+        CheckConstraint("attempts <= 3", name="check_max_attempts"),
     )
 
     # Relationships
     user = relationship("User", back_populates="verifications")
-    token = relationship("AuthToken", backref="verification")
-    device = relationship("AuthDevice", backref="verifications")
+    token = relationship("AuthToken", back_populates="verifications")
+    device = relationship("AuthDevice", back_populates="verifications")

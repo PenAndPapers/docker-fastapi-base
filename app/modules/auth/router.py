@@ -8,7 +8,7 @@ from .schema import (
     LogoutResponse,
     TokenRequest,
     TokenResponse,
-    VerificationRequest
+    VerificationRequest,
 )
 from .service import AuthService
 from .providers import get_auth_service

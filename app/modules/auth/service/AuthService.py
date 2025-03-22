@@ -2,22 +2,24 @@ from datetime import datetime
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
-from ..constants import TokenTypeEnum. VerificationTypeEnum
+from ..constants import TokenTypeEnum, VerificationTypeEnum
 from ..repository import AuthRepository
 from ..policy import AuthTokenPolicy, AuthIPRateLimitingPolicy, AuthMFAPolicy
 from ..schema import (
     DeviceInfo,
     DeviceRequest,
+    DeviceResponse,
     RegisterRequest,
     RegisterResponse,
     LoginRequest,
     LoginResponse,
     LogoutRequest,
     LogoutResponse,
+    Token,
     TokenRequest,
     TokenResponse,
     VerificationRequest,
-    VerificationResponse
+    VerificationResponse,
 )
 
 
@@ -59,10 +61,17 @@ class AuthService:
 
             user = RegisterResponse(
                 **auth_user.model_dump(),
-                token=stored_token,
+                token=TokenResponse(**vars(stored_token)),
             )
 
-            self.repository.store_verification_code(user, VerificationTypeEnum.EMAIL_SIGNUP, stored_device.id)
+            self.repository.store_verification_code(
+                user,
+                stored_token.id,
+                stored_device.id,
+                VerificationTypeEnum.EMAIL_SIGNUP,
+            )
+
+            # TODO: Send verification code to user's email/sms
 
             return user
 
@@ -70,7 +79,7 @@ class AuthService:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Register failed",
         )
-        
+
     def login(self, data: LoginRequest) -> LoginResponse:
         """Login"""
         auth_user = self.repository.login(data)
@@ -91,7 +100,9 @@ class AuthService:
                 requires_verification=True,
             )
 
-            self.store_verification_code(user, VerificationTypeEnum.EMAIL_LOGIN, stored_device.id)
+            self.store_verification_code(
+                user, VerificationTypeEnum.EMAIL_LOGIN, stored_device.id
+            )
 
             return user
 
@@ -107,18 +118,19 @@ class AuthService:
     def one_time_pin(self, data: VerificationRequest) -> RegisterResponse:
         """Verify registration using tokens sent via email/sms"""
 
-         # check if verification code exists
-        verification = self.repository.get_verification_code(data.user_id, data.verification_code)
+        # check if verification code exists
+        verification = self.repository.get_verification_code(
+            data.user_id, data.verification_code
+        )
         if not verification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code"
+                detail="Invalid verification code",
             )
 
         if verification.attempts >= 3:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Too many attempts"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Too many attempts"
             )
 
         # check if code already expired
@@ -128,15 +140,18 @@ class AuthService:
         if is_expired:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code"
+                detail="Invalid verification code",
             )
 
         # check if verification code is associated with access token and user
         token = self.repository.get_token(data.access_token)
-        if not token or not(token.user_id == data.user_id and verification.access_token == data.access_token):
+        if not token or not (
+            token.user_id == data.user_id
+            and verification.access_token == data.access_token
+        ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code"
+                detail="Invalid verification code",
             )
 
         # update virifcation code status to verified and pass to repository
@@ -149,7 +164,7 @@ class AuthService:
         if not updated_verification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code"
+                detail="Invalid verification code",
             )
 
         # invalidate all existing tokens for the user
@@ -159,7 +174,7 @@ class AuthService:
         new_token = self._handle_token(data.user_id, True)
 
         return new_token
-            
+
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
         """Refresh token and generate new access token"""
         # Verify access token refresh eligibility first
@@ -176,7 +191,7 @@ class AuthService:
 
         return self._handle_token(data.user_id)
 
-    def _handle_token(self, user_id: int, is_token_verified: bool = False) -> TokenResponse:
+    def _handle_token(self, user_id: int, is_token_verified: bool = False) -> Token:
         """Handle user token generation and storage"""
 
         # Invalidate existing user tokens

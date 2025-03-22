@@ -24,3 +24,6 @@ class AuthDevice(Auth):
 
     # Relationship to user
     user = relationship("User", back_populates="devices")
+
+    # Add this relationship
+    verifications = relationship("AuthVerification", back_populates="device")
