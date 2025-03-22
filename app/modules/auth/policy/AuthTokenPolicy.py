@@ -20,7 +20,7 @@ class AuthTokenPolicy:
         raise UnauthorizedError(detail=detail)
 
     def _generate_token(
-        self, user_id: int, is_token_verified: bool = False
+        self, user_id: int, email: str, is_token_verified: bool = False
     ) -> TokenResponse:
         access_token_expires = datetime.utcnow() + timedelta(
             minutes=self.access_token_expire_minutes
@@ -29,13 +29,19 @@ class AuthTokenPolicy:
             days=self.refresh_token_expire_days
         )
 
+        token_data = {
+            "sub": str(user_id),
+            "email": email,
+            "verified": is_token_verified,
+        }
+
         access_token = self._create_token(
-            data={"sub": str(user_id), "verified": is_token_verified},
+            data=token_data,
             expires_delta=access_token_expires,
             token_type=TokenTypeEnum.ACCESS,  # Explicitly set token type
         )
         refresh_token = self._create_token(
-            data={"sub": str(user_id), "verified": is_token_verified},
+            data=token_data,
             expires_delta=refresh_token_expires,
             token_type=TokenTypeEnum.REFRESH,  # Explicitly set token type
         )

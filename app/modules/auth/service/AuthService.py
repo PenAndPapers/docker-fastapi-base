@@ -15,6 +15,8 @@ from ..schema import (
     LoginResponse,
     LogoutRequest,
     LogoutResponse,
+    OneTimePinRequest,
+    OneTimePinResponse,
     Token,
     TokenRequest,
     TokenResponse,
@@ -57,7 +59,7 @@ class AuthService:
             stored_device = self._handle_device(auth_user.id, device_info)
 
             # We set to False as user need to verifiy their email
-            stored_token = self._handle_token(auth_user.id, False)
+            stored_token = self._handle_token(auth_user.id, auth_user.email, False)
 
             user = RegisterResponse(
                 **auth_user.model_dump(),
@@ -115,7 +117,7 @@ class AuthService:
         """Logout"""
         return self.repository.logout(data)
 
-    def one_time_pin(self, data: VerificationRequest) -> RegisterResponse:
+    def one_time_pin(self, data: OneTimePinRequest) -> RegisterResponse:
         """Verify registration using tokens sent via email/sms"""
 
         # check if verification code exists
@@ -191,14 +193,14 @@ class AuthService:
 
         return self._handle_token(data.user_id)
 
-    def _handle_token(self, user_id: int, is_token_verified: bool = False) -> Token:
+    def _handle_token(self, user_id: int, user_email: str, is_token_verified: bool = False) -> Token:
         """Handle user token generation and storage"""
 
         # Invalidate existing user tokens
         self.repository.invalidate_user_tokens(user_id)
 
         # Generate new token for the user
-        token_data = self.token_policy._generate_token(user_id, is_token_verified)
+        token_data = self.token_policy._generate_token(user_id, user_email, is_token_verified)
 
         # Store user token
         stored_token = self.repository.store_token(
