@@ -2,7 +2,7 @@ import secrets
 from typing import Union
 from hashlib import sha256
 from time import time
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
@@ -21,8 +21,8 @@ from ..schema import (
     Token,
     TokenRequest,
     TokenResponse,
-    VerificationResponse,
     VerificationRequest,
+    VerificationResponse,
 )
 from app.database import DatabaseRepository
 from app.modules.user.model import User
@@ -148,7 +148,7 @@ class AuthRepository:
             device_id=device_id,
             code=verification_code,
             type=type,
-            expires_at=datetime.utcnow() + timedelta(minutes=15),
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=55),
             attempts=0,
             is_verified=False,
             verified_at=None,
@@ -162,27 +162,33 @@ class AuthRepository:
     ) -> VerificationResponse:
         """Get verification code and increment attempt counter"""
         verification = self.verification_repository.get_by_filter(
-            {"user_id": user_id, "is_verified": False}
+            {"user_id": user_id, "code": verification_code, "is_verified": False}
         )
 
-        if verification and verification.code != verification_code:
-            # Increment attempts counter only when code is found but incorrect
-            verification.attempts += 1
-            self.verification_repository.update(verification.id, verification)
+        if verification:
+            # Convert SQLAlchemy model to dict, then to VerificationResponse
+            return VerificationResponse(**vars(verification))
 
-        return VerificationResponse(**vars(verification)) if verification else None
+        return None
 
     def update_verification_code(
-        self, verification: VerificationResponse
+        self, verification: VerificationRequest
     ) -> VerificationResponse:
         """Update verification code"""
-        updated_veridication = self.verification_repository.update(
+        # Convert to dict for update
+        update_data = verification.model_dump(exclude_unset=True)
+        updated_verification = self.verification_repository.update(
             verification.id, verification
         )
 
-        return VerificationResponse(**vars(updated_veridication))
+        return VerificationResponse(**vars(updated_verification))
 
     def invalidate_verification_code(self) -> None:
         """Invalidate verification code"""
         # TODO: Implement
         pass
+
+    def get_user(self, user_id: int) -> AuthUserResponse:
+        """Get user by ID"""
+        user = self.user_repository.get_one({"id": user_id})
+        return AuthUserResponse(**vars(user))

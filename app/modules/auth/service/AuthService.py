@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
@@ -22,6 +22,7 @@ from ..schema import (
     TokenResponse,
     VerificationRequest,
     VerificationResponse,
+    VerificationUpdateRequest,
 )
 
 
@@ -84,55 +85,60 @@ class AuthService:
         """Logout"""
         return self.repository.logout(data)
 
-    def one_time_pin(self, data: OneTimePinRequest) -> TokenResponse:
+    def one_time_pin(self, data: OneTimePinRequest) -> OneTimePinResponse:
         """Verify registration using tokens sent via email/sms"""
         # First decode and verify the access token to get user info
         try:
             payload = self.token_policy._verify_token(
-                data.access_token, 
-                token_type=TokenTypeEnum.ACCESS
+                data.access_token, token_type=TokenTypeEnum.ACCESS
             )
             user_id = int(payload)  # payload contains the user_id from sub claim
         except UnauthorizedError:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid access token"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid access token"
             )
 
         # Check if verification code exists and is valid
         verification = self.repository.get_verification_code(
-            user_id, 
-            data.verification_code
+            user_id, data.verification_code
         )
+
         if not verification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code"
+                detail="Invalid verification code",
             )
+
+        # Add debug print to see what we're getting
+        print("Verification object:", verification)
+        print("Verification type:", type(verification))
+        print("Verification dict:", verification.model_dump() if verification else None)
 
         # Validate attempts and expiration
         if verification.attempts >= 3:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
-                detail="Too many attempts"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Too many attempts"
             )
 
-        if datetime.utcnow() > verification.expires_at:
+        # Make the comparison using timezone-aware datetimes
+        if datetime.now(timezone.utc) > verification.expires_at:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Verification code expired"
+                detail="Verification code expired",
             )
 
         # Mark verification as complete
-        verification.is_verified = True
-        verification.verified_at = datetime.utcnow()
-        self.repository.update_verification_code(verification)
+        current_time = datetime.now(timezone.utc)
+        update_data = VerificationUpdateRequest(
+            id=verification.id, is_verified=True, verified_at=current_time
+        )
+        self.repository.update_verification_code(update_data)
 
         # Generate new token with verified status
         user = self.repository.get_user(user_id)  # You'll need to add this method
         new_token = self._handle_token(user_id, user.email, True)
 
-        return TokenResponse(**vars(new_token))
+        return OneTimePinResponse(**vars(new_token))
 
     def login(self, data: LoginRequest) -> LoginResponse:
         """Login"""
@@ -185,14 +191,18 @@ class AuthService:
 
         return self._handle_token(data.user_id)
 
-    def _handle_token(self, user_id: int, user_email: str, is_token_verified: bool = False) -> Token:
+    def _handle_token(
+        self, user_id: int, user_email: str, is_token_verified: bool = False
+    ) -> Token:
         """Handle user token generation and storage"""
 
         # Invalidate existing user tokens
         self.repository.invalidate_user_tokens(user_id)
 
         # Generate new token for the user
-        token_data = self.token_policy._generate_token(user_id, user_email, is_token_verified)
+        token_data = self.token_policy._generate_token(
+            user_id, user_email, is_token_verified
+        )
 
         # Store user token
         stored_token = self.repository.store_token(

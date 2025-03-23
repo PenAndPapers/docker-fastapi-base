@@ -23,4 +23,23 @@ class VerificationRequest(BaseModel):
 
 
 class VerificationResponse(BaseModel):
-    pass
+    id: int
+    user_id: int
+    token_id: int
+    device_id: int
+    code: str
+    type: VerificationTypeEnum
+    expires_at: datetime
+    attempts: int
+    is_verified: bool
+    verified_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class VerificationUpdateRequest(BaseModel):
+    id: int
+    is_verified: bool = True
+    verified_at: datetime | None = None
+
+    model_config = {"from_attributes": True}

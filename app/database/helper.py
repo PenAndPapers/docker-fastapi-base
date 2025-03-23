@@ -22,6 +22,20 @@ class DatabaseRepository:
         except Exception as e:
             raise DatabaseError(detail=f"Error querying items: {e}")
 
+    def get_by_filter(self, filters: dict) -> ModelType | None:
+        """
+        Get one item by filter criteria.
+        Example: get_by_filter({"user_id": 1, "code": "123456"})
+        Returns None if no item is found.
+        """
+        try:
+            query = self.query()
+            for field, value in filters.items():
+                query = query.filter(getattr(self.model, field) == value)
+            return query.first()
+        except Exception as e:
+            raise DatabaseError(detail=f"Error getting item by filter: {e}")
+
     def get_one(self, id: int) -> ModelType | None:
         """
         Get one item by id.
@@ -80,6 +94,36 @@ class DatabaseRepository:
         except Exception as e:
             self.db.rollback()
             raise DatabaseError(detail=f"Error updating item: {e}")
+
+    def update_by_filter(self, filters: dict, data: SchemaType) -> ModelType:
+        """
+        Update an item by filter criteria.
+        Example: update_by_filter({"user_id": 1, "code": "123456"}, update_data)
+        """
+        try:
+            # Get the item using filters
+            query = self.query()
+            for field, value in filters.items():
+                query = query.filter(getattr(self.model, field) == value)
+
+            item = query.first()
+            if not item:
+                raise NotFoundError(detail="Item not found with given filters")
+
+            # Update the item
+            update_data = data.model_dump(exclude_unset=True)
+            if not update_data:
+                raise BadRequestError(detail="No data to update")
+
+            for field, value in update_data.items():
+                setattr(item, field, value)
+
+            self.db.commit()
+            self.db.refresh(item)
+            return item
+        except Exception as e:
+            self.db.rollback()
+            raise DatabaseError(detail=f"Error updating item by filter: {e}")
 
     def delete(self, id: int) -> bool:
         """

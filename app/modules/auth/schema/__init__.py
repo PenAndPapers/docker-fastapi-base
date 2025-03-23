@@ -5,7 +5,11 @@ from .AuthLogin import LoginVerificationResponse, LoginRequest, LoginResponse
 from .AuthLogout import LogoutRequest, LogoutResponse
 from .AuthOneTimePin import OneTimePinRequest, OneTimePinResponse
 from .AuthToken import Token, TokenRequest, TokenResponse
-from .AuthVerification import VerificationRequest, VerificationResponse
+from .AuthVerification import (
+    VerificationRequest,
+    VerificationResponse,
+    VerificationUpdateRequest,
+)
 
 __all__ = [
     "AuthBase",
@@ -27,4 +31,5 @@ __all__ = [
     "TokenResponse",
     "VerificationRequest",
     "VerificationResponse",
+    "VerificationUpdateRequest",
 ]

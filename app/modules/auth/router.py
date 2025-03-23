@@ -6,6 +6,8 @@ from .schema import (
     LoginResponse,
     LogoutRequest,
     LogoutResponse,
+    OneTimePinRequest,
+    OneTimePinResponse,
     TokenRequest,
     TokenResponse,
     VerificationRequest,
@@ -30,10 +32,10 @@ def login(
     return service.login(data)
 
 
-@router.post("/one-time-pin", response_model=RegisterResponse)
+@router.post("/one-time-pin", response_model=OneTimePinResponse)
 def one_time_pin(
-    data: VerificationRequest, service: AuthService = Depends(get_auth_service)
-) -> RegisterResponse:
+    data: OneTimePinRequest, service: AuthService = Depends(get_auth_service)
+) -> OneTimePinResponse:
     return service.one_time_pin(data)
 
 
