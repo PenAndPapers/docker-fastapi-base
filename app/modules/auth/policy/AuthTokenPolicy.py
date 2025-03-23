@@ -79,7 +79,7 @@ class AuthTokenPolicy:
         token: str,
         verify_exp: bool = True,
         token_type: TokenTypeEnum = TokenTypeEnum.ACCESS,
-    ) -> str:
+    ) -> dict:  # Change return type to dict
         try:
             # First decode without verification to check token structure
             unverified_payload = jwt.decode(token, options={"verify_signature": False})
@@ -110,11 +110,10 @@ class AuthTokenPolicy:
                 )
 
             # Verify subject claim
-            subject = payload.get("sub")
-            if not subject:
+            if not payload.get("sub"):
                 self._raise_token_error("Invalid token: missing subject claim")
 
-            return subject
+            return payload  # Return full payload instead of just subject
 
         except jwt.ExpiredSignatureError:
             self._raise_token_error("Token has expired")

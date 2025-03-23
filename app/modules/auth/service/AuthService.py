@@ -86,17 +86,18 @@ class AuthService:
         return self.repository.logout(data)
 
     def one_time_pin(self, data: OneTimePinRequest) -> OneTimePinResponse:
-        """Verify registration using tokens sent via email/sms"""
-        # First decode and verify the access token to get user info
         try:
             payload = self.token_policy._verify_token(
                 data.access_token, token_type=TokenTypeEnum.ACCESS
             )
-            user_id = int(payload)  # payload contains the user_id from sub claim
-        except UnauthorizedError:
+            user_id = int(payload["sub"])  # Extract and convert to integer
+        except (UnauthorizedError, ValueError):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid access token"
             )
+
+        # Get user info
+        user = self.repository.get_user(user_id)  # Now passing just the integer
 
         # Check if verification code exists and is valid
         verification = self.repository.get_verification_code(
@@ -108,11 +109,6 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid verification code",
             )
-
-        # Add debug print to see what we're getting
-        print("Verification object:", verification)
-        print("Verification type:", type(verification))
-        print("Verification dict:", verification.model_dump() if verification else None)
 
         # Validate attempts and expiration
         if verification.attempts >= 3:
@@ -135,10 +131,14 @@ class AuthService:
         self.repository.update_verification_code(update_data)
 
         # Generate new token with verified status
-        user = self.repository.get_user(user_id)  # You'll need to add this method
+        user = self.repository.get_user(user_id)
         new_token = self._handle_token(user_id, user.email, True)
 
-        return OneTimePinResponse(**vars(new_token))
+        # Return with required fields
+        return OneTimePinResponse(
+            token=TokenResponse(**vars(new_token)),
+            message="Email verification successful",
+        )
 
     def login(self, data: LoginRequest) -> LoginResponse:
         """Login"""

@@ -190,5 +190,5 @@ class AuthRepository:
 
     def get_user(self, user_id: int) -> AuthUserResponse:
         """Get user by ID"""
-        user = self.user_repository.get_one({"id": user_id})
+        user = self.user_repository.get_one(user_id)
         return AuthUserResponse(**vars(user))
