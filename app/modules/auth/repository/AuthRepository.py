@@ -14,6 +14,7 @@ from ..schema import (
     DeviceResponse,
     RegisterRequest,
     RegisterResponse,
+    RegisterResponseBasic,
     LoginRequest,
     LoginResponse,
     LogoutRequest,
@@ -38,7 +39,7 @@ class AuthRepository:
         self.verification_repository = DatabaseRepository(db, AuthVerification)
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def register(self, data: RegisterRequest) -> AuthUserResponse:
+    def register(self, data: RegisterRequest) -> RegisterResponseBasic:
         """Register a user"""
         # Filter and convert to UserCreateRequest
         user_data = data.model_dump(exclude={"device_id", "client_info"})
@@ -47,20 +48,7 @@ class AuthRepository:
         # Create user with filtered data
         user = self.user_repository.create(user_request)
 
-        return AuthUserResponse(
-            id=user.id,
-            email=user.email,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            phone_number=user.phone_number,
-            gender=user.gender,
-            date_of_birth=user.date_of_birth,
-            address=user.address,
-            is_verified=user.is_verified,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-            deleted_at=user.deleted_at,
-        )
+        return RegisterResponseBasic(id=user.id, email=user.email)
 
     def login(self, data: LoginRequest) -> LoginResponse:
         """Verify user credentials"""
@@ -125,15 +113,16 @@ class AuthRepository:
 
     def store_verification_code(
         self,
-        user: Union[RegisterResponse, LoginResponse],
-        token_id: int,
+        user_id: int,
         device_id: int,
+        token_id: int,
+        access_token: str,
         type: VerificationTypeEnum,
     ) -> VerificationResponse:
         """Store verification code"""
         # Generate a unique seed using user ID, token, timestamp and a random nonce
         nonce = secrets.token_hex(16)  # Add extra randomness
-        seed = f"{user.id}-{user.token.access_token}-{int(time())}-{nonce}"
+        seed = f"{user_id}-{access_token}-{int(time())}-{nonce}"
 
         # Generate hash and ensure 6 unique digits
         hash_bytes = sha256(seed.encode()).digest()
@@ -143,7 +132,7 @@ class AuthRepository:
         verification_code = format(int(str(num)[-6:]), "06d")
 
         verification_data = VerificationRequest(
-            user_id=user.id,
+            user_id=user_id,
             token_id=token_id,
             device_id=device_id,
             code=verification_code,

@@ -27,6 +27,10 @@ docker-down:
 docker-down-v:
 	docker-compose down -v --remove-orphans
 
+docker-restart:
+	$(MAKE) docker-down
+	$(MAKE) docker-up
+
 docker-build:
 	docker-compose build --parallel --no-cache
 

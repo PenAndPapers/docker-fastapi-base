@@ -1,6 +1,6 @@
 from .AuthBase import AuthBase, AuthUserResponse
 from .AuthDevice import DeviceInfo, DeviceRequest, DeviceResponse
-from .AuthRegister import RegisterRequest, RegisterResponse
+from .AuthRegister import RegisterRequest, RegisterResponse, RegisterResponseBasic
 from .AuthLogin import LoginVerificationResponse, LoginRequest, LoginResponse
 from .AuthLogout import LogoutRequest, LogoutResponse
 from .AuthOneTimePin import OneTimePinRequest, OneTimePinResponse
@@ -19,6 +19,7 @@ __all__ = [
     "DeviceResponse",
     "RegisterRequest",
     "RegisterResponse",
+    "RegisterResponseBasic",
     "LoginVerificationResponse",
     "LoginRequest",
     "LoginResponse",

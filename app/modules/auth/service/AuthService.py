@@ -63,14 +63,15 @@ class AuthService:
             stored_token = self._handle_token(auth_user.id, auth_user.email, False)
 
             user = RegisterResponse(
-                **auth_user.model_dump(),
+                email=auth_user.email,
                 token=TokenResponse(**vars(stored_token)),
             )
 
             self.repository.store_verification_code(
-                user,
-                stored_token.id,
+                auth_user.id,
                 stored_device.id,
+                stored_token.id,
+                stored_token.access_token,
                 VerificationTypeEnum.EMAIL_SIGNUP,
             )
 
@@ -82,8 +83,6 @@ class AuthService:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Register failed",
         )
-        """Logout"""
-        return self.repository.logout(data)
 
     def one_time_pin(self, data: OneTimePinRequest) -> OneTimePinResponse:
         try:
