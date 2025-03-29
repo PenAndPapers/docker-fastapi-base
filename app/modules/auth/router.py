@@ -10,7 +10,6 @@ from .schema import (
     OneTimePinResponse,
     TokenRequest,
     TokenResponse,
-    VerificationRequest,
 )
 from .service import AuthService
 from .providers import get_auth_service

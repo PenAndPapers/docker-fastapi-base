@@ -31,6 +31,7 @@ class VerificationRequest(__VerificationBase):
 
 class VerificationUpdateRequest(BaseModel):
     id: int
+    token_id: int
     is_verified: bool = True
     verified_at: datetime | None = None
 

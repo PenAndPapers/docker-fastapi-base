@@ -1,8 +1,6 @@
 import jwt
 import uuid
 from datetime import datetime, timedelta
-from typing import Optional
-from fastapi import HTTPException, status
 from app.core import app_settings, UnauthorizedError
 from ..constants import TokenTypeEnum
 from ..schema import TokenResponse
@@ -81,7 +79,7 @@ class AuthTokenPolicy:
     ) -> dict:  # Change return type to dict
         try:
             # First decode without verification to check token structure
-            unverified_payload = jwt.decode(token, options={"verify_signature": False})
+            # unverified_payload = jwt.decode(token, options={"verify_signature": False})
 
             # Then do full verification with our requirements
             payload = jwt.decode(

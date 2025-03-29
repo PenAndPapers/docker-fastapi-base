@@ -26,6 +26,3 @@ class RegisterResponse(BaseModel):
     token: TokenResponse
 
     model_config = {"from_attributes": True}
-
-
-

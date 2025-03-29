@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
@@ -20,8 +20,6 @@ from ..schema import (
     Token,
     TokenRequest,
     TokenResponse,
-    VerificationRequest,
-    VerificationResponse,
     VerificationUpdateRequest,
 )
 
@@ -62,11 +60,6 @@ class AuthService:
             # We set to False as user need to verifiy their email
             stored_token = self._handle_token(auth_user.id, auth_user.email, False)
 
-            user = RegisterResponse(
-                email=auth_user.email,
-                token=TokenResponse(**vars(stored_token)),
-            )
-
             self.repository.store_verification_code(
                 auth_user.id,
                 stored_device.id,
@@ -77,7 +70,10 @@ class AuthService:
 
             # TODO: Send verification code to user's email/sms
 
-            return user
+            return RegisterResponse(
+                email=auth_user.email,
+                token=TokenResponse(**vars(stored_token)),
+            )
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -97,18 +93,28 @@ class AuthService:
             )
 
         # Get user info
-        user = self.repository.get_user(user_id)  # Now passing just the integer
+        user = self.repository.get_user(user_id)
 
         # Check if verification code exists and is valid
         verification = self.repository.get_verification_code(
             user_id, data.verification_code
         )
 
+        # Validate verification code if valid/exists
         if not verification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid verification code",
             )
+
+        # Update attempts
+        update_data = VerificationUpdateRequest(
+            id=verification.id,
+            token_id=verification.token_id,
+            attempts=verification.attempts + 1,
+            updated_at=datetime.now(timezone.utc),
+        )
+        self.repository.update_verification_code(update_data)
 
         # Validate attempts and expiration
         if verification.attempts >= 3:
@@ -123,16 +129,15 @@ class AuthService:
                 detail="Verification code expired",
             )
 
+        # Generate new token with verified status
+        new_token = self._handle_token(user_id, user.email, True)
+
         # Mark verification as complete
         current_time = datetime.now(timezone.utc)
         update_data = VerificationUpdateRequest(
             id=verification.id, is_verified=True, verified_at=current_time
         )
         self.repository.update_verification_code(update_data)
-
-        # Generate new token with verified status
-        user = self.repository.get_user(user_id)
-        new_token = self._handle_token(user_id, user.email, True)
 
         # Return with required fields
         return OneTimePinResponse(

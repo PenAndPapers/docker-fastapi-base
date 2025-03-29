@@ -1,4 +1,3 @@
-import enum
 from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
@@ -11,7 +10,6 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
 )
-from datetime import datetime
 from .Auth import Auth
 from ..constants import VerificationTypeEnum
 

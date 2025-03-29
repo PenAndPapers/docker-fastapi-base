@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 from .AuthBase import AuthBase, AuthUserResponse
 from .AuthToken import TokenResponse
 

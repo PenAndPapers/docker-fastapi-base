@@ -1,5 +1,4 @@
 import secrets
-from typing import Union
 from hashlib import sha256
 from time import time
 from datetime import datetime, timezone, timedelta
@@ -13,7 +12,6 @@ from ..schema import (
     DeviceRequest,
     DeviceResponse,
     RegisterRequest,
-    RegisterResponse,
     RegisterResponseBasic,
     LoginRequest,
     LoginResponse,
@@ -23,6 +21,7 @@ from ..schema import (
     TokenRequest,
     TokenResponse,
     VerificationRequest,
+    VerificationUpdateRequest,
     VerificationResponse,
 )
 from app.database import DatabaseRepository
@@ -161,11 +160,9 @@ class AuthRepository:
         return None
 
     def update_verification_code(
-        self, verification: VerificationRequest
+        self, verification: VerificationUpdateRequest
     ) -> VerificationResponse:
         """Update verification code"""
-        # Convert to dict for update
-        update_data = verification.model_dump(exclude_unset=True)
         updated_verification = self.verification_repository.update(
             verification.id, verification
         )
