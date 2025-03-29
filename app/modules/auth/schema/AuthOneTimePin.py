@@ -3,8 +3,10 @@ from .AuthToken import TokenResponse
 
 
 class OneTimePinRequest(BaseModel):
-    access_token: str = Field(..., min_length=15)
-    verification_code: str = Field(..., min_length=6, max_length=6)
+    access_token: str = Field(
+        ..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", min_length=300
+    )
+    verification_code: str = Field(..., example="123456", min_length=6, max_length=6)
     device_id: str = Field(
         ...,
         min_length=1,
@@ -22,5 +24,6 @@ class OneTimePinRequest(BaseModel):
 
 
 class OneTimePinResponse(BaseModel):
+    id: int
     token: TokenResponse
     message: str

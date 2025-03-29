@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
-from .AuthBase import AuthBase, AuthUserResponse
+from .AuthBase import AuthBase
 from .AuthToken import TokenResponse
 from passlib.context import CryptContext
 

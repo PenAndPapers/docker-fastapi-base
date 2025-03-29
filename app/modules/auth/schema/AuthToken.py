@@ -16,15 +16,18 @@ class Token(BaseModel):
 
 class TokenRequest(BaseModel):
     user_id: int = Field(example=1)
-    access_token: str = Field(example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-    refresh_token: str = Field(example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    access_token: str = Field(
+        example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", min_length=300
+    )
+    refresh_token: str = Field(
+        example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", min_length=300
+    )
     expires_at: datetime = Field(example="2024-12-31T23:59:59")
 
     model_config = {"from_attributes": True}
 
 
 class TokenResponse(BaseModel):
-    user_id: int
     access_token: str
     refresh_token: str
     expires_at: datetime

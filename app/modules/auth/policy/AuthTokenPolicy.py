@@ -47,7 +47,6 @@ class AuthTokenPolicy:
         )
 
         return TokenResponse(
-            user_id=user_id,
             access_token=access_token,
             refresh_token=refresh_token,
             expires_at=access_token_expires,

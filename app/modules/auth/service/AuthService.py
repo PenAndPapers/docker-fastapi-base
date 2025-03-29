@@ -135,6 +135,7 @@ class AuthService:
 
         # Return with required fields
         return OneTimePinResponse(
+            id=user.id,
             token=TokenResponse(**vars(new_token)),
             message="Email verification successful",
         )
