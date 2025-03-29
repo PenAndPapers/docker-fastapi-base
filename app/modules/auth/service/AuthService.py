@@ -85,6 +85,7 @@ class AuthService:
         )
 
     def one_time_pin(self, data: OneTimePinRequest) -> OneTimePinResponse:
+        """Verify user's one-time-pin"""
         try:
             payload = self.token_policy._verify_token(
                 data.access_token, token_type=TokenTypeEnum.ACCESS
@@ -135,7 +136,7 @@ class AuthService:
 
         # Return with required fields
         return OneTimePinResponse(
-            id=user.id,
+            email=user.email,
             token=TokenResponse(**vars(new_token)),
             message="Email verification successful",
         )

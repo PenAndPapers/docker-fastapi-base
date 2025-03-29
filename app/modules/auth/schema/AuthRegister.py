@@ -14,6 +14,13 @@ class RegisterRequest(AuthBase):
     model_config = {"from_attributes": True}
 
 
+class RegisterResponseBasic(BaseModel):
+    id: int
+    email: EmailStr
+
+    model_config = {"from_attributes": True}
+
+
 class RegisterResponse(BaseModel):
     email: EmailStr
     token: TokenResponse
@@ -21,8 +28,4 @@ class RegisterResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class RegisterResponseBasic(BaseModel):
-    id: int
-    email: EmailStr
 
-    model_config = {"from_attributes": True}

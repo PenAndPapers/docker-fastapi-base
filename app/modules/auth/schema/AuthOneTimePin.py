@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from .AuthToken import TokenResponse
 
 
@@ -24,6 +24,6 @@ class OneTimePinRequest(BaseModel):
 
 
 class OneTimePinResponse(BaseModel):
-    id: int
+    email: EmailStr
     token: TokenResponse
     message: str

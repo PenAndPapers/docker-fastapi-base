@@ -22,6 +22,7 @@ docker-up-background:
 docker-up: docker-up-background  # Alias for docker-up-background for backward compatibility
 
 docker-down:
+	$(MAKE) clean
 	docker-compose down --remove-orphans
 
 docker-down-v:
@@ -73,6 +74,7 @@ lint:
 	docker-compose exec api black --check app tests docker --exclude .venv --exclude scaffold
 
 format:
+	docker-compose exec -T api ruff check --fix app tests docker --exclude .venv --exclude scaffold
 	docker-compose exec -T api ruff format app tests docker --exclude .venv --exclude scaffold
 	docker-compose exec -T api black app tests docker --exclude .venv --exclude scaffold
 
@@ -175,7 +177,7 @@ clean:
 # Help command
 help:
 	@echo "Available commands:"
-	@echo "\033[33m Development commands: \033[0m"
+	@echo "\033[1;33m Development commands: \033[0m"
 	@echo "\033[32m  install                             - Install dependencies using uv \033[0m"
 	@echo "\033[32m  update-deps                         - Update dependencies locally and rebuild docker \033[0m"
 	@echo ""
@@ -185,6 +187,7 @@ help:
 	@echo "\033[32m  docker-up                           - Alias for docker-up-background \033[0m"
 	@echo "\033[32m  docker-down                         - Stop the application and remove orphans \033[0m"
 	@echo "\033[32m  docker-down-v                       - Stop the application, remove orphans and volumes \033[0m"
+	@echo "\033[32m  docker-restart                      - Restart the application \033[0m"
 	@echo "\033[32m  docker-build                        - Build the containers \033[0m"
 	@echo "\033[32m  docker-update-deps                  - Update dependencies in container \033[0m"
 	@echo "\033[32m  docker-logs                         - View application logs \033[0m"
