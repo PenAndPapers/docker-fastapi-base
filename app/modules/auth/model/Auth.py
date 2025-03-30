@@ -7,6 +7,6 @@ class Auth(Base):
     __abstract__ = True
 
     id = Column(Integer, primary_key=True, index=True)
-    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = Column(DateTime, nullable=True)

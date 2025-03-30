@@ -4,7 +4,7 @@ from .AuthRegister import RegisterRequest, RegisterResponse, RegisterResponseBas
 from .AuthLogin import LoginVerificationResponse, LoginRequest, LoginResponse
 from .AuthLogout import LogoutRequest, LogoutResponse
 from .AuthOneTimePin import OneTimePinRequest, OneTimePinResponse
-from .AuthToken import Token, TokenRequest, TokenResponse
+from .AuthToken import Token, TokenRequest, TokenUpdateRequest, TokenResponse
 from .AuthVerification import (
     VerificationRequest,
     VerificationResponse,
@@ -29,6 +29,7 @@ __all__ = [
     "OneTimePinResponse",
     "Token",
     "TokenRequest",
+    "TokenUpdateRequest"
     "TokenResponse",
     "VerificationRequest",
     "VerificationResponse",

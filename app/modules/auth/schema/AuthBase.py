@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from app.modules.user.schema.UserBase import UserBase
+from .AuthToken import TokenResponse
 
 
 class AuthBase(BaseModel):
@@ -66,5 +66,6 @@ class AuthBase(BaseModel):
         return value
 
 
-class AuthUserResponse(UserBase):
-    pass
+class AuthUserResponse(BaseModel):
+    email: EmailStr
+    token: TokenResponse

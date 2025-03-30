@@ -1,4 +1,7 @@
-from datetime import datetime, timezone
+import secrets
+from hashlib import sha256
+from datetime import datetime, timezone, timedelta
+from time import time
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
@@ -6,20 +9,21 @@ from ..constants import TokenTypeEnum, VerificationTypeEnum
 from ..repository import AuthRepository
 from ..policy import AuthTokenPolicy, AuthIPRateLimitingPolicy, AuthMFAPolicy
 from ..schema import (
+    AuthUserResponse,
     DeviceInfo,
     DeviceRequest,
     DeviceResponse,
     RegisterRequest,
-    RegisterResponse,
     LoginRequest,
     LoginResponse,
     LogoutRequest,
     LogoutResponse,
     OneTimePinRequest,
-    OneTimePinResponse,
     Token,
     TokenRequest,
+    TokenUpdateRequest,
     TokenResponse,
+    VerificationRequest,
     VerificationUpdateRequest,
 )
 
@@ -40,7 +44,7 @@ class AuthService:
             schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=14
         )
 
-    def register(self, data: RegisterRequest) -> RegisterResponse:
+    def register(self, data: RegisterRequest) -> AuthUserResponse:
         """Register"""
         # Keep device info for later use
         device_info = DeviceInfo(
@@ -52,35 +56,52 @@ class AuthService:
         hashed_data = data.with_hashed_password(self.pwd_context)
 
         # Register user (repository will handle field filtering)
-        auth_user = self.repository.register(hashed_data)
+        user = self.repository.register(hashed_data)
 
-        if auth_user:
-            stored_device = self._handle_device(auth_user.id, device_info)
-
-            # We set to False as user need to verifiy their email
-            stored_token = self._handle_token(auth_user.id, auth_user.email, False)
-
-            self.repository.store_verification_code(
-                auth_user.id,
-                stored_device.id,
-                stored_token.id,
-                stored_token.access_token,
-                VerificationTypeEnum.EMAIL_SIGNUP,
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Register failed",
             )
 
-            # TODO: Send verification code to user's email/sms
+        stored_device = self._handle_device(user.id, device_info)
 
-            return RegisterResponse(
-                email=auth_user.email,
-                token=TokenResponse(**vars(stored_token)),
+        # We set to False as user need to verifiy their email
+        stored_token = self._handle_token(user.id, user.email, False)
+
+        # Generate a unique seed using user ID, token, timestamp and a random nonce
+        nonce = secrets.token_hex(16)  # Add extra randomness
+        seed = f"{user.id}-{stored_token.access_token}-{int(time())}-{nonce}"
+
+        # Generate hash and ensure 6 unique digits
+        hash_bytes = sha256(seed.encode()).digest()
+        num = int.from_bytes(hash_bytes, byteorder="big")
+
+        # Ensure exactly 6 digits
+        verification_code = format(int(str(num)[-6:]), "06d")
+
+        self.repository.store_verification_code(
+            VerificationRequest(
+                user_id=user.id,
+                token_id=stored_token.id,
+                device_id=stored_device.id,
+                code=verification_code,
+                type=VerificationTypeEnum.EMAIL_SIGNUP,
+                attempts=0,
+                expires_at=datetime.now(timezone.utc) + timedelta(minutes=55),
+                updated_at=datetime.now(timezone.utc),
+                verified_at=None,
             )
-
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Register failed",
         )
 
-    def one_time_pin(self, data: OneTimePinRequest) -> OneTimePinResponse:
+        # TODO: Send verification code to user's email/sms
+
+        return AuthUserResponse(
+            email=user.email,
+            token=TokenResponse(**vars(stored_token)),
+        )
+
+    def one_time_pin(self, data: OneTimePinRequest) -> AuthUserResponse:
         """Verify user's one-time-pin"""
         try:
             payload = self.token_policy._verify_token(
@@ -95,31 +116,24 @@ class AuthService:
         # Get user info
         user = self.repository.get_user(user_id)
 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User not found",
+            )
+
         # Check if verification code exists and is valid
-        verification = self.repository.get_verification_code(
-            user_id, data.verification_code
-        )
+        verification = self.repository.get_verification_code({
+            "user_id": user.id,
+            "code": data.verification_code,
+            "deleted_at": None
+        })
 
         # Validate verification code if valid/exists
         if not verification:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid verification code",
-            )
-
-        # Update attempts
-        update_data = VerificationUpdateRequest(
-            id=verification.id,
-            token_id=verification.token_id,
-            attempts=verification.attempts + 1,
-            updated_at=datetime.now(timezone.utc),
-        )
-        self.repository.update_verification_code(update_data)
-
-        # Validate attempts and expiration
-        if verification.attempts >= 3:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Too many attempts"
             )
 
         # Make the comparison using timezone-aware datetimes
@@ -129,24 +143,52 @@ class AuthService:
                 detail="Verification code expired",
             )
 
-        # Generate new token with verified status
-        new_token = self._handle_token(user_id, user.email, True)
+        # Validate attempts and expiration
+        if verification.attempts >= 3:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Too many attempts"
+            )
 
-        # Mark verification as complete
+        attempts = verification.attempts + 1
         current_time = datetime.now(timezone.utc)
-        update_data = VerificationUpdateRequest(
-            id=verification.id, is_verified=True, verified_at=current_time
+
+        current_token = self.repository.get_token({
+            "user_id": user.id,
+            "access_token": data.access_token,
+            "deleted_at": None
+        })
+
+        print(current_token)
+
+        # Update veification attempts
+        # update_data = VerificationUpdateRequest(
+        #     id=verification.id,
+        #     token_id=verification.token_id,
+        #     attempts=attempts,
+        #     verified_at=current_time,
+        #     deleted_at=current_time,
+        # )
+
+        # Update old token deleted_at field
+        self.repository.update_token(
+            TokenUpdateRequest(
+                id=current_token.id,
+                user_id=user.id,
+                access_token=data.access_token,
+                deleted_at=current_time,
+            )
         )
-        self.repository.update_verification_code(update_data)
+
+        # Generate new token with verified status
+        new_token = self._handle_token(user_id, user.email, data.access_token, True)
 
         # Return with required fields
-        return OneTimePinResponse(
+        return AuthUserResponse(
             email=user.email,
-            token=TokenResponse(**vars(new_token)),
-            message="Email verification successful",
+            token=TokenResponse(**vars(new_token))
         )
 
-    def login(self, data: LoginRequest) -> LoginResponse:
+    def login(self, data: LoginRequest) -> AuthUserResponse:
         """Login"""
         auth_user = self.repository.login(data)
 
@@ -198,12 +240,9 @@ class AuthService:
         return self._handle_token(data.user_id)
 
     def _handle_token(
-        self, user_id: int, user_email: str, is_token_verified: bool = False
+        self, user_id: int, user_email: str, access_token: str, is_token_verified: bool = False
     ) -> Token:
         """Handle user token generation and storage"""
-
-        # Invalidate existing user tokens
-        self.repository.invalidate_user_tokens(user_id)
 
         # Generate new token for the user
         token_data = self.token_policy._generate_token(
@@ -227,9 +266,6 @@ class AuthService:
 
     def _handle_device(self, user_id: int, device: DeviceInfo) -> DeviceResponse:
         """Handle user device information and storage"""
-
-        # Invalidate existing user devices
-        self.repository.invalidate_user_devices(user_id)
 
         # Store device information
         stored_device = self.repository.store_device(

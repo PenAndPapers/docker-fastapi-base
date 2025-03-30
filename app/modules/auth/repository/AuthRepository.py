@@ -26,7 +26,7 @@ from ..schema import (
 )
 from app.database import DatabaseRepository
 from app.modules.user.model import User
-from app.modules.user.schema import UserCreateRequest
+from app.modules.user.schema import UserCreateRequest, UserResponse
 
 
 class AuthRepository:
@@ -90,9 +90,14 @@ class AuthRepository:
         token = self.token_repository.create(data)
         return Token(**vars(token))
 
-    def get_token(self, access_token: str) -> TokenResponse:
+    def get_token(self, filter_dict: dict) -> TokenResponse:
         """Get a token by access token"""
-        token = self.token_repository.get_by_filter({"access_token": access_token})
+        token = self.token_repository.get_by_filter(filter_dict)
+        return TokenResponse(**vars(token))
+
+    def update_token(self, data: TokenRequest) -> TokenResponse:
+        """Update a token"""
+        token = self.token_repository.update(data.id, data)
         return TokenResponse(**vars(token))
 
     def invalidate_user_tokens(self, user_id: int) -> None:
@@ -112,46 +117,17 @@ class AuthRepository:
 
     def store_verification_code(
         self,
-        user_id: int,
-        device_id: int,
-        token_id: int,
-        access_token: str,
-        type: VerificationTypeEnum,
+        verification_data: VerificationRequest
     ) -> VerificationResponse:
         """Store verification code"""
-        # Generate a unique seed using user ID, token, timestamp and a random nonce
-        nonce = secrets.token_hex(16)  # Add extra randomness
-        seed = f"{user_id}-{access_token}-{int(time())}-{nonce}"
-
-        # Generate hash and ensure 6 unique digits
-        hash_bytes = sha256(seed.encode()).digest()
-        num = int.from_bytes(hash_bytes, byteorder="big")
-
-        # Ensure exactly 6 digits
-        verification_code = format(int(str(num)[-6:]), "06d")
-
-        verification_data = VerificationRequest(
-            user_id=user_id,
-            token_id=token_id,
-            device_id=device_id,
-            code=verification_code,
-            type=type,
-            expires_at=datetime.now(timezone.utc) + timedelta(minutes=55),
-            attempts=0,
-            is_verified=False,
-            verified_at=None,
-        )
-
         verification = self.verification_repository.create(verification_data)
         return VerificationResponse(**vars(verification))
 
     def get_verification_code(
-        self, user_id: int, verification_code: str
+        self, filter_dict: dict
     ) -> VerificationResponse:
         """Get verification code and increment attempt counter"""
-        verification = self.verification_repository.get_by_filter(
-            {"user_id": user_id, "code": verification_code, "is_verified": False}
-        )
+        verification = self.verification_repository.get_by_filter(filter_dict)
 
         if verification:
             # Convert SQLAlchemy model to dict, then to VerificationResponse
@@ -174,7 +150,7 @@ class AuthRepository:
         # TODO: Implement
         pass
 
-    def get_user(self, user_id: int) -> AuthUserResponse:
+    def get_user(self, user_id: int) -> UserResponse:
         """Get user by ID"""
         user = self.user_repository.get_one(user_id)
-        return AuthUserResponse(**vars(user))
+        return UserResponse(**vars(user))

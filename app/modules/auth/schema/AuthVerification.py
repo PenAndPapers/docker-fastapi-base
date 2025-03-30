@@ -9,7 +9,6 @@ class __VerificationBase(BaseModel):
     device_id: int
     code: str
     attempts: int
-    is_verified: bool
     type: VerificationTypeEnum
     expires_at: datetime
     verified_at: datetime | None = None
@@ -24,7 +23,6 @@ class VerificationRequest(__VerificationBase):
         example="123456",
         description="6-digit verification code",
     )
-    attempts: int = 0
 
     model_config = {"from_attributes": True}
 
@@ -32,7 +30,6 @@ class VerificationRequest(__VerificationBase):
 class VerificationUpdateRequest(BaseModel):
     id: int
     token_id: int
-    is_verified: bool = True
     verified_at: datetime | None = None
 
     model_config = {"from_attributes": True}

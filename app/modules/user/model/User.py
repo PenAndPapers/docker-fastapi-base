@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, Boolean, String, DateTime, text
 from sqlalchemy.orm import relationship
+from uuid import uuid4
 from app.database import Base
 
 
@@ -17,7 +18,7 @@ class User(Base):
     address = Column(String, nullable=True)
     role = Column(String, nullable=True, server_default="user")
     status = Column(String, nullable=True, server_default="offline")
-    is_verified = Column(Boolean, server_default=text("false"), nullable=False)
+    uuid = Column(String, default=lambda: str(uuid4()), unique=True, nullable=False)
     created_at = Column(
         DateTime(timezone=True),
         server_default=text("CURRENT_TIMESTAMP"),
@@ -28,6 +29,7 @@ class User(Base):
         server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
     )
+    verified_at = Column(DateTime(timezone=True), nullable=True)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships

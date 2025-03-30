@@ -23,6 +23,14 @@ class TokenRequest(BaseModel):
         example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", min_length=300
     )
     expires_at: datetime = Field(example="2024-12-31T23:59:59")
+    deleted_at: datetime = Field(example="2024-12-31T23:59:59", default=None)
+
+    model_config = {"from_attributes": True}
+
+
+class TokenUpdateRequest(BaseModel):
+    id: int = Field(example=1)
+    deleted_at: datetime = Field(example="2024-12-31T23:59:59", default=None)
 
     model_config = {"from_attributes": True}
 

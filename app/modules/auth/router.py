@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from .schema import (
+    AuthUserResponse,
     RegisterRequest,
     RegisterResponse,
     LoginRequest,
@@ -17,10 +18,10 @@ from .providers import get_auth_service
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/register", response_model=RegisterResponse)
+@router.post("/register", response_model=AuthUserResponse)
 def register(
     data: RegisterRequest, service: AuthService = Depends(get_auth_service)
-) -> RegisterResponse:
+) -> AuthUserResponse:
     return service.register(data)
 
 
@@ -31,10 +32,10 @@ def login(
     return service.login(data)
 
 
-@router.post("/one-time-pin", response_model=OneTimePinResponse)
+@router.post("/one-time-pin", response_model=AuthUserResponse)
 def one_time_pin(
     data: OneTimePinRequest, service: AuthService = Depends(get_auth_service)
-) -> OneTimePinResponse:
+) -> AuthUserResponse:
     return service.one_time_pin(data)
 
 
