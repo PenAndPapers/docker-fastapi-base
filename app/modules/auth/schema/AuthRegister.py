@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr
 from .AuthBase import AuthBase
 from .AuthToken import TokenResponse
 from passlib.context import CryptContext

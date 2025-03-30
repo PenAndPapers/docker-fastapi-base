@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta
 from app.core import app_settings, UnauthorizedError
 from ..constants import TokenTypeEnum
-from ..schema import TokenResponse
+from ..schema import GenerateTokenResponse
 
 
 class AuthTokenPolicy:
@@ -19,7 +19,7 @@ class AuthTokenPolicy:
 
     def _generate_token(
         self, user_id: int, email: str, is_token_verified: bool = False
-    ) -> TokenResponse:
+    ) -> GenerateTokenResponse:
         access_token_expires = datetime.utcnow() + timedelta(
             minutes=self.access_token_expire_minutes
         )
@@ -44,7 +44,7 @@ class AuthTokenPolicy:
             token_type=TokenTypeEnum.REFRESH,  # Explicitly set token type
         )
 
-        return TokenResponse(
+        return GenerateTokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
             expires_at=access_token_expires,

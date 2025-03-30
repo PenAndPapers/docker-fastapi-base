@@ -4,14 +4,36 @@ from app.modules.auth.constants import VerificationTypeEnum
 
 
 class __VerificationBase(BaseModel):
-    user_id: int
-    token_id: int
-    device_id: int
-    code: str
-    attempts: int
+    user_id: int = Field(
+        ...,
+        description="User ID",
+        example=1,
+    )
+    token_id: int = Field(
+        ...,
+        description="Token ID",
+        example=1,
+    )
+    device_id: int = Field(
+       ...,
+        description="Device ID",
+        example=1,
+    )
+    code: str = Field(
+        min_length=6,
+        max_length=6,
+        example="123456",
+        description="6-digit verification code",
+    )
+    attempts: int = Field(
+        default=0,
+        description="Number of attempts",
+        example=0,
+    )
     type: VerificationTypeEnum
     expires_at: datetime
     verified_at: datetime | None = None
+    deleted_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -29,9 +51,10 @@ class VerificationRequest(__VerificationBase):
 
 class VerificationUpdateRequest(BaseModel):
     id: int
-    token_id: int
+    attempts: int
+    updated_at: datetime
     verified_at: datetime | None = None
-
+    deleted_at: datetime | None = None
     model_config = {"from_attributes": True}
 
 

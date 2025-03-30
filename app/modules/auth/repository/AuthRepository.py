@@ -1,11 +1,6 @@
-import secrets
-from hashlib import sha256
-from time import time
-from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
-from ..constants import VerificationTypeEnum
 from ..model import AuthDevice, AuthToken, AuthVerification
 from ..schema import (
     AuthUserResponse,
@@ -20,6 +15,7 @@ from ..schema import (
     Token,
     TokenRequest,
     TokenResponse,
+    TokenUpdateRequest,
     VerificationRequest,
     VerificationUpdateRequest,
     VerificationResponse,
@@ -88,17 +84,17 @@ class AuthRepository:
     def store_token(self, data: TokenRequest) -> Token:
         """Store a new token for a user"""
         token = self.token_repository.create(data)
-        return Token(**vars(token))
+        return Token.model_validate(token)
 
-    def get_token(self, filter_dict: dict) -> TokenResponse:
+    def get_token(self, filter_dict: dict) -> Token:
         """Get a token by access token"""
         token = self.token_repository.get_by_filter(filter_dict)
-        return TokenResponse(**vars(token))
+        return Token.model_validate(token)
 
-    def update_token(self, data: TokenRequest) -> TokenResponse:
+    def update_token(self, data: TokenUpdateRequest) -> TokenResponse:
         """Update a token"""
         token = self.token_repository.update(data.id, data)
-        return TokenResponse(**vars(token))
+        return TokenResponse.model_validate(token)
 
     def invalidate_user_tokens(self, user_id: int) -> None:
         """Invalidate all existing tokens for a user"""
@@ -108,7 +104,7 @@ class AuthRepository:
     def store_device(self, data: DeviceRequest) -> DeviceResponse:
         """Store device info"""
         device = self.device_repository.create(data)
-        return DeviceResponse(**vars(device))
+        return DeviceResponse.model_validate(device)
 
     def invalidate_user_devices(self, user_id: int) -> None:
         """Invalidate all existing devices for a user"""

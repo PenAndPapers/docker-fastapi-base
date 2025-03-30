@@ -2,13 +2,11 @@ from fastapi import APIRouter, Depends
 from .schema import (
     AuthUserResponse,
     RegisterRequest,
-    RegisterResponse,
     LoginRequest,
     LoginResponse,
     LogoutRequest,
     LogoutResponse,
     OneTimePinRequest,
-    OneTimePinResponse,
     TokenRequest,
     TokenResponse,
 )

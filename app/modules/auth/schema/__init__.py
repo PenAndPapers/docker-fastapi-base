@@ -4,12 +4,8 @@ from .AuthRegister import RegisterRequest, RegisterResponse, RegisterResponseBas
 from .AuthLogin import LoginVerificationResponse, LoginRequest, LoginResponse
 from .AuthLogout import LogoutRequest, LogoutResponse
 from .AuthOneTimePin import OneTimePinRequest, OneTimePinResponse
-from .AuthToken import Token, TokenRequest, TokenUpdateRequest, TokenResponse
-from .AuthVerification import (
-    VerificationRequest,
-    VerificationResponse,
-    VerificationUpdateRequest,
-)
+from .AuthToken import (Token, TokenRequest, TokenUpdateRequest, TokenResponse, GenerateTokenResponse)
+from .AuthVerification import (VerificationRequest, VerificationUpdateRequest, VerificationResponse)
 
 __all__ = [
     "AuthBase",
@@ -31,7 +27,8 @@ __all__ = [
     "TokenRequest",
     "TokenUpdateRequest"
     "TokenResponse",
+    "GenerateTokenResponse",
     "VerificationRequest",
-    "VerificationResponse",
     "VerificationUpdateRequest",
+    "VerificationResponse",
 ]

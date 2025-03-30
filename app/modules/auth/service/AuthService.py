@@ -77,15 +77,12 @@ class AuthService:
         hash_bytes = sha256(seed.encode()).digest()
         num = int.from_bytes(hash_bytes, byteorder="big")
 
-        # Ensure exactly 6 digits
-        verification_code = format(int(str(num)[-6:]), "06d")
-
         self.repository.store_verification_code(
             VerificationRequest(
                 user_id=user.id,
                 token_id=stored_token.id,
                 device_id=stored_device.id,
-                code=verification_code,
+                code=format(int(str(num)[-6:]), "06d"),  # Ensure exactly 6 digits
                 type=VerificationTypeEnum.EMAIL_SIGNUP,
                 attempts=0,
                 expires_at=datetime.now(timezone.utc) + timedelta(minutes=55),
@@ -138,6 +135,7 @@ class AuthService:
 
         # Make the comparison using timezone-aware datetimes
         if datetime.now(timezone.utc) > verification.expires_at:
+            # TODO update verification deleted_at field make it soft delete
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Verification code expired",
@@ -152,29 +150,31 @@ class AuthService:
         attempts = verification.attempts + 1
         current_time = datetime.now(timezone.utc)
 
+        # Get the user's current token
         current_token = self.repository.get_token({
             "user_id": user.id,
             "access_token": data.access_token,
             "deleted_at": None
         })
 
-        print(current_token)
+        # Update verification code
+        # Make old verification code inactive and soft delete it
+        self.repository.update_verification_code(
+            VerificationUpdateRequest(
+                id=verification.id,
+                attempts=attempts,
+                verified_at=current_time,
+                updated_at=current_time,
+                deleted_at=current_time
+            )
+        )
 
-        # Update veification attempts
-        # update_data = VerificationUpdateRequest(
-        #     id=verification.id,
-        #     token_id=verification.token_id,
-        #     attempts=attempts,
-        #     verified_at=current_time,
-        #     deleted_at=current_time,
-        # )
-
-        # Update old token deleted_at field
+        # Make old token inactive and soft delete it
         self.repository.update_token(
             TokenUpdateRequest(
                 id=current_token.id,
-                user_id=user.id,
-                access_token=data.access_token,
+                is_active=False,
+                updated_at=current_time,
                 deleted_at=current_time,
             )
         )

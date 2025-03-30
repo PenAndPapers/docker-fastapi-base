@@ -30,6 +30,8 @@ class TokenRequest(BaseModel):
 
 class TokenUpdateRequest(BaseModel):
     id: int = Field(example=1)
+    is_active: bool = Field(example=True)
+    updated_at: datetime = Field(example="2024-12-31T23:59:59")
     deleted_at: datetime = Field(example="2024-12-31T23:59:59", default=None)
 
     model_config = {"from_attributes": True}
@@ -41,4 +43,12 @@ class TokenResponse(BaseModel):
     expires_at: datetime
     token_type: str = TokenTypeEnum.BEARER.value
 
+    model_config = {"from_attributes": True}
+
+
+class GenerateTokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    expires_at: datetime
+    token_type: str = TokenTypeEnum.BEARER.value
     model_config = {"from_attributes": True}
