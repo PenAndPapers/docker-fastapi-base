@@ -3,11 +3,11 @@
 # Development commands (local machine)
 install:
 	pip install uv
-	uv pip install -r requirements.in
+	uv pip install --no-cache -r requirements.in
 	uv pip compile requirements.in -o requirements.txt
 
 update-deps:
-	uv pip install -r requirements.in
+	uv pip install --no-cache -r requirements.in
 	uv pip compile requirements.in -o requirements.txt
 	$(MAKE) docker-build
 	@echo "Dependencies updated successfully"

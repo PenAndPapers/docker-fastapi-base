@@ -23,18 +23,18 @@ def register(
     return service.register(data)
 
 
-@router.post("/login", response_model=LoginResponse)
-def login(
-    data: LoginRequest, service: AuthService = Depends(get_auth_service)
-) -> LoginResponse:
-    return service.login(data)
-
-
 @router.post("/one-time-pin", response_model=AuthUserResponse)
 def one_time_pin(
     data: OneTimePinRequest, service: AuthService = Depends(get_auth_service)
 ) -> AuthUserResponse:
     return service.one_time_pin(data)
+
+
+@router.post("/login", response_model=LoginResponse)
+def login(
+    data: LoginRequest, service: AuthService = Depends(get_auth_service)
+) -> LoginResponse:
+    return service.login(data)
 
 
 @router.post("/logout", response_model=LogoutResponse)

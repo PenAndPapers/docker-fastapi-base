@@ -26,6 +26,8 @@ from ..schema import (
     VerificationRequest,
     VerificationUpdateRequest,
 )
+from app.modules.user.schema import UserUpdateRequest
+from app.modules.user.constants import UserStatusEnum
 
 
 class AuthService:
@@ -181,6 +183,20 @@ class AuthService:
 
         # Generate new token with verified status
         new_token = self._handle_token(user_id, user.email, data.access_token, True)
+
+        # Update user's email verification status
+        if new_token and verification.type == VerificationTypeEnum.EMAIL_SIGNUP:
+            user = UserUpdateRequest(
+                **vars(user),
+                is_verified=True,
+                status=UserStatusEnum.ACTIVE,
+                verified_at=current_time,
+                updated_at=current_time,
+            )
+
+            print("\n\n\n\n", user, "\n\n\n\n")
+            # Update user verified_at field
+            self.repository.update_user(user)
 
         # Return with required fields
         return AuthUserResponse(

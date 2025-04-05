@@ -22,7 +22,7 @@ from ..schema import (
 )
 from app.database import DatabaseRepository
 from app.modules.user.model import User
-from app.modules.user.schema import UserCreateRequest, UserResponse
+from app.modules.user.schema import UserCreateRequest, UserUpdateRequest, UserResponse
 
 
 class AuthRepository:
@@ -44,6 +44,11 @@ class AuthRepository:
         user = self.user_repository.create(user_request)
 
         return RegisterResponseBasic(id=user.id, email=user.email)
+
+    def update_user(self, data: UserUpdateRequest) -> UserResponse:
+        """Update user"""
+        user = self.user_repository.update(data.id, data)
+        return UserResponse.model_validate(user)
 
     def login(self, data: LoginRequest) -> LoginResponse:
         """Verify user credentials"""

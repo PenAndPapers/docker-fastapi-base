@@ -1,5 +1,9 @@
 from .UserBase import UserBase
 
 
-class UserUpdate(UserBase):
-    pass
+class UserUpdateRequest(UserBase):
+    id: int | None = None
+
+    model_config = {
+        "from_attributes": True,
+    }
