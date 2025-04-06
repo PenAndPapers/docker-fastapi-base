@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from ..policy import AuthIPRateLimitingPolicy, AuthMFAPolicy, AuthTokenPolicy
 from ..repository import AuthRepository
-from ..service import AuthService  # Remove duplicate AuthTokenPolicy import
+from ..service import AuthService
 
 
 def get_auth_repository(db: Session = Depends(get_db)) -> AuthRepository:
