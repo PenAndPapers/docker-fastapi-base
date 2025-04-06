@@ -1,11 +1,11 @@
-from .AuthBase import AuthBase, AuthUserResponse
-from .AuthDevice import DeviceInfo, DeviceRequest, DeviceResponse
-from .AuthRegister import RegisterRequest, RegisterResponse, RegisterResponseBasic
-from .AuthLogin import LoginVerificationResponse, LoginRequest, LoginResponse
-from .AuthLogout import LogoutRequest, LogoutResponse
-from .AuthOneTimePin import OneTimePinRequest, OneTimePinResponse
-from .AuthToken import (Token, TokenRequest, TokenUpdateRequest, TokenResponse, GenerateTokenResponse)
-from .AuthVerification import (VerificationRequest, VerificationUpdateRequest, VerificationResponse)
+from .AuthBaseSchema import AuthBase, AuthUserResponse
+from .AuthDeviceSchema import DeviceInfo, DeviceRequest, DeviceResponse
+from .AuthRegisterSchema import RegisterRequest, RegisterResponse, RegisterResponseBasic
+from .AuthLoginSchema import LoginVerificationResponse, LoginRequest, LoginResponse
+from .AuthLogoutSchema import LogoutRequest, LogoutResponse
+from .AuthOneTimePinSchema import OneTimePinRequest, OneTimePinResponse
+from .AuthTokenSchema import (Token, TokenRequest, TokenUpdateRequest, TokenResponse, GenerateTokenResponse)
+from .AuthVerificationSchema import (VerificationRequest, VerificationUpdateRequest, VerificationResponse)
 
 __all__ = [
     "AuthBase",
