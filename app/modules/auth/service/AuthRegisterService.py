@@ -11,9 +11,13 @@ from ..schema import (
     TokenResponse,
     VerificationRequest,
 )
+from .AuthTokenService import AuthTokenService
 
 
 class AuthRegisterService:
+    def __init__(self):
+        self.token_service = AuthTokenService()
+
     def register(self, data: RegisterRequest) -> AuthUserResponse:
         """Register"""
         # Keep device info for later use

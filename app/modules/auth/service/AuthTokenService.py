@@ -25,7 +25,7 @@ class AuthTokenService:
 
         return self._handle_token(data.user_id)
 
-    def _handle_token(
+    def store_token(
         self, user_id: int, user_email: str, access_token: str, is_token_verified: bool = False
     ) -> Token:
         """Handle user token generation and storage"""
@@ -49,17 +49,3 @@ class AuthTokenService:
         stored_token.token_type = token_data.token_type
 
         return stored_token
-
-    def _handle_device(self, user_id: int, device: DeviceInfo) -> DeviceResponse:
-        """Handle user device information and storage"""
-
-        # Store device information
-        stored_device = self.repository.store_device(
-            DeviceRequest(
-                user_id=user_id,
-                device_id=device.device_id,
-                client_info=device.client_info,
-            )
-        )
-
-        return stored_device
