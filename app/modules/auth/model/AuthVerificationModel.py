@@ -14,7 +14,7 @@ from .Auth import Auth
 from ..constants import VerificationTypeEnum
 
 
-class AuthVerification(Auth):
+class AuthVerificationModel(Auth):
     __tablename__ = "auth_verifications"
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))

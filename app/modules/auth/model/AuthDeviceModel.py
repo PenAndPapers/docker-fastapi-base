@@ -11,7 +11,7 @@ from sqlalchemy.orm import relationship
 from .Auth import Auth
 
 
-class AuthDevice(Auth):
+class AuthDeviceModel(Auth):
     __tablename__ = "auth_devices"
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))

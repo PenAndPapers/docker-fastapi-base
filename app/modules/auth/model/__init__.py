@@ -1,6 +1,6 @@
-from .Auth import Auth
-from .AuthDevice import AuthDevice
-from .AuthToken import AuthToken
-from .AuthVerification import AuthVerification
+from .AuthBaseModel import AuthBaseModel
+from .AuthDeviceModel import AuthDeviceModel
+from .AuthTokenModel import AuthTokenModel
+from .AuthVerificationModel import AuthVerificationModel
 
-__all__ = ["Auth", "AuthDevice", "AuthToken", "AuthVerification"]
+__all__ = ["AuthBaseModel", "AuthDeviceModel", "AuthTokenModel", "AuthVerificationModel"]

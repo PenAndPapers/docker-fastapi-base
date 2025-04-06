@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from .Auth import Auth
 
 
-class AuthToken(Auth):
+class AuthTokenModel(Auth):
     __tablename__ = "auth_tokens"
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))

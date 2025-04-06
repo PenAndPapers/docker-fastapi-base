@@ -1,7 +1,10 @@
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
-from ..model import AuthDevice, AuthToken, AuthVerification
+from app.database import DatabaseRepository
+from app.modules.user.model import User
+from app.modules.user.schema import UserCreateRequest, UserUpdateRequest, UserResponse
+from ..model import AuthDeviceModel, AuthTokenModel, AuthVerificationModel
 from ..schema import (
     AuthUserResponse,
     DeviceRequest,
@@ -20,18 +23,15 @@ from ..schema import (
     VerificationUpdateRequest,
     VerificationResponse,
 )
-from app.database import DatabaseRepository
-from app.modules.user.model import User
-from app.modules.user.schema import UserCreateRequest, UserUpdateRequest, UserResponse
 
 
 class AuthRepository:
     def __init__(self, db: Session):
         self.db = db
         self.user_repository = DatabaseRepository(db, User)
-        self.token_repository = DatabaseRepository(db, AuthToken)
-        self.device_repository = DatabaseRepository(db, AuthDevice)
-        self.verification_repository = DatabaseRepository(db, AuthVerification)
+        self.device_repository = DatabaseRepository(db, AuthDeviceModel)
+        self.token_repository = DatabaseRepository(db, AuthTokenModel)
+        self.verification_repository = DatabaseRepository(db, AuthVerificationModel)
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def register(self, data: RegisterRequest) -> RegisterResponseBasic:

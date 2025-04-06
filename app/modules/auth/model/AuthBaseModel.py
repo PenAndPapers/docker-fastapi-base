@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, DateTime
 
 
-class Auth(Base):
+class AuthBaseModel(Base):
     __abstract__ = True
 
     id = Column(Integer, primary_key=True, index=True)
