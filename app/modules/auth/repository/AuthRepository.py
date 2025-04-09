@@ -6,13 +6,12 @@ from app.modules.user.model import UserModel
 from app.modules.user.schema import UserCreateRequest, UserUpdateRequest, UserResponse
 from ..model import AuthDeviceModel, AuthTokenModel, AuthVerificationModel
 from ..schema import (
-    AuthUserResponse,
     DeviceRequest,
     DeviceResponse,
     RegisterRequest,
     RegisterResponseBasic,
+    LoginResponseBasic,
     LoginRequest,
-    LoginResponse,
     LogoutRequest,
     LogoutResponse,
     Token,
@@ -50,36 +49,24 @@ class AuthRepository:
         user = self.user_repository.update(data.id, data)
         return UserResponse.model_validate(user)
 
-    def login(self, data: LoginRequest) -> LoginResponse:
+    def login(self, data: LoginRequest) -> LoginResponseBasic:
         """Verify user credentials"""
         # Use direct column comparison instead of dict
         user = (
-            self.db.query(User)
+            self.db.query(UserModel)
             .filter(
-                User.email == data.email,
-                User.deleted_at.is_(None),  # Check if account is not deleted
-                User.is_verified.is_(True),  # Check if account is verified
+                UserModel.email == data.email,
+                UserModel.deleted_at.is_(None),  # Check if account is not deleted
+                UserModel.verified_at.is_not(None),  # Check if account is verified
             )
             .first()
         )
 
+        # Check if user exists and password is correct
         if not user or not self.pwd_context.verify(data.password, user.password):
             raise UnauthorizedError(detail="Invalid credentials")
 
-        return AuthUserResponse(
-            id=user.id,
-            email=user.email,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            phone_number=user.phone_number,
-            gender=user.gender,
-            date_of_birth=user.date_of_birth,
-            address=user.address,
-            is_verified=user.is_verified,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-            deleted_at=user.deleted_at,
-        )
+        return LoginResponseBasic(id=user.id, uuid=user.uuid,)
 
     def logout(self, data: LogoutRequest) -> LogoutResponse:
         """Logout a user"""

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from .providers import (
+from .dependency import (
     get_auth_login_service,
     get_auth_logout_service,
     get_auth_one_time_pin_service,

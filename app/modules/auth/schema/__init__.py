@@ -1,6 +1,6 @@
 from .AuthBaseSchema import AuthBase, AuthUserResponse
 from .AuthDeviceSchema import DeviceInfo, DeviceRequest, DeviceResponse
-from .AuthLoginSchema import LoginVerificationResponse, LoginRequest, LoginResponse
+from .AuthLoginSchema import LoginResponseBasic, LoginRequest, LoginResponse
 from .AuthLogoutSchema import LogoutRequest, LogoutResponse
 from .AuthOneTimePinSchema import OneTimePinRequest, OneTimePinResponse
 from .AuthRegisterSchema import RegisterRequest, RegisterResponse, RegisterResponseBasic
@@ -15,11 +15,11 @@ __all__ = [
     "DeviceRequest",
     "DeviceResponse",
 
+    "LoginResponseBasic",
     "LoginRequest",
     "LoginResponse",
     "LogoutRequest",
     "LogoutResponse",
-    "LoginVerificationResponse",
 
     "OneTimePinRequest",
     "OneTimePinResponse",

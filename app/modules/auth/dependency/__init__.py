@@ -1,4 +1,4 @@
-from .services import (
+from .inject import (
   get_auth_device_service,
   get_auth_login_service,
   get_auth_logout_service,

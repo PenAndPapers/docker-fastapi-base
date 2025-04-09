@@ -13,10 +13,6 @@ from ..service import (
 )
 
 
-def get_auth_repository(db: Session = Depends(get_db)) -> AuthRepository:
-    return AuthRepository(db)
-
-
 def get_auth_policies():
     """Factory for auth policies"""
     return {
@@ -24,6 +20,10 @@ def get_auth_policies():
         "mfa_policy": AuthMFAPolicy(),
         "token_policy": AuthTokenPolicy(),
     }
+
+
+def get_auth_repository(db: Session = Depends(get_db)) -> AuthRepository:
+    return AuthRepository(db)
 
 
 def get_auth_device_service(
