@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from app.core import UnauthorizedError
+from app.modules.user.schema import UserUpdateRequest
+from app.modules.user.constants import UserStatusEnum
 from ..constants import TokenTypeEnum, VerificationTypeEnum
 from ..schema import (
     AuthUserResponse,
@@ -9,11 +11,16 @@ from ..schema import (
     TokenResponse,
     VerificationUpdateRequest,
 )
-from app.modules.user.schema import UserUpdateRequest
-from app.modules.user.constants import UserStatusEnum
+from ..repository import AuthRepository
+from ..policy import AuthTokenPolicy
+from .AuthTokenService import AuthTokenService
 
 
 class AuthOneTimePinService:
+    def __init__(self, repository: AuthRepository) -> None:
+        self.repository = repository
+        self.token_policy = AuthTokenPolicy()
+        self.token_service = AuthTokenService(repository)
 
     def one_time_pin(self, data: OneTimePinRequest) -> AuthUserResponse:
         """Verify user's one-time-pin"""
@@ -97,7 +104,7 @@ class AuthOneTimePinService:
         )
 
         # Generate new token with verified status
-        new_token = self._handle_token(user_id, user.email, data.access_token, True)
+        new_token = self.token_service.store_token(user_id, user.email, data.access_token, True)
 
         # Update user's email verification status
         if new_token and verification.type == VerificationTypeEnum.EMAIL_SIGNUP:

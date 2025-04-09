@@ -5,9 +5,17 @@ from ..schema import (
     TokenRequest,
     TokenResponse,
 )
-
+from ..repository import AuthRepository
+from ..policy import AuthTokenPolicy
 
 class AuthTokenService:
+    def __init__(
+        self,
+        repository: AuthRepository
+    ):
+        self.repository = repository
+        self.token_policy = AuthTokenPolicy()
+
     def refresh_token(self, data: TokenRequest) -> TokenResponse:
         """Refresh token and generate new access token"""
         # Verify access token refresh eligibility first
@@ -22,7 +30,7 @@ class AuthTokenService:
         if int(user_id_from_token) != data.user_id:
             raise UnauthorizedError(detail="Token does not belong to the user")
 
-        return self._handle_token(data.user_id)
+        return self.store_token(data.user_id)
 
     def store_token(
         self, user_id: int, user_email: str, access_token: str, is_token_verified: bool = False

@@ -1,3 +1,4 @@
+import re
 import secrets
 from hashlib import sha256
 from datetime import datetime, timezone, timedelta
@@ -11,12 +12,16 @@ from ..schema import (
     TokenResponse,
     VerificationRequest,
 )
+from ..repository import AuthRepository
+from .AuthDeviceService import AuthDeviceService
 from .AuthTokenService import AuthTokenService
 
 
 class AuthRegisterService:
-    def __init__(self):
-        self.token_service = AuthTokenService()
+    def __init__(self, repository: AuthRepository):
+        self.repository = repository
+        self.device_service = AuthDeviceService(repository)
+        self.token_service = AuthTokenService(repository)
 
     def register(self, data: RegisterRequest) -> AuthUserResponse:
         """Register"""
@@ -38,10 +43,10 @@ class AuthRegisterService:
                 detail="Register failed",
             )
 
-        stored_device = self._handle_device(user.id, device_info)
+        stored_device = self.device_service.store_device(user.id, device_info)
 
         # We set to False as user need to verifiy their email
-        stored_token = self._handle_token(user.id, user.email, False)
+        stored_token = self.token_service.store_token(user.id, user.email, False)
 
         # Generate a unique seed using user ID, token, timestamp and a random nonce
         nonce = secrets.token_hex(16)  # Add extra randomness

@@ -20,9 +20,9 @@ class AuthVerificationModel(AuthBaseModel):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     token_id = Column(Integer, ForeignKey("auth_tokens.id", ondelete="CASCADE"))
     device_id = Column(Integer, ForeignKey("auth_devices.id", ondelete="CASCADE"))
-    code = Column(String(6), nullable=False)  # 6-digit verification code
+    code = Column(String(6), nullable=False)
     type = Column(Enum(VerificationTypeEnum), nullable=False)
-    attempts = Column(Integer, server_default=text("0"))  # Track failed attempts (max 3)
+    attempts = Column(Integer, server_default=text("0"))
     expires_at = Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"), nullable=False,)
     verified_at = Column(DateTime(timezone=True), nullable=True)
 
