@@ -28,14 +28,17 @@ class AuthOneTimePinService:
             payload = self.token_policy._verify_token(
                 data.access_token, token_type=TokenTypeEnum.ACCESS
             )
-            user_id = int(payload["sub"])  # Extract and convert to integer
+
+            print("\n\n\n\n", payload, "\n\n\n\n")
+
+            uuid = payload["sub"]  # Extract and convert to integer
         except (UnauthorizedError, ValueError):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid access token"
             )
 
-        # Get user info
-        user = self.repository.get_user(user_id)
+        # Get user
+        user = self.repository.get_user_by_filter({ "uuid": uuid, "deleted_at": None })
 
         if not user:
             raise HTTPException(
@@ -104,7 +107,7 @@ class AuthOneTimePinService:
         )
 
         # Generate new token with verified status
-        new_token = self.token_service.store_token(user_id, user.email, data.access_token, True)
+        new_token = self.token_service.store_token(user.id, user.uuid, data.access_token, True)
 
         # Update user's email verification status
         if new_token and verification.type == VerificationTypeEnum.EMAIL_SIGNUP:
@@ -121,12 +124,10 @@ class AuthOneTimePinService:
                 updated_at=current_time,
             )
 
-            print("\n\n\n\n", user, "\n\n\n\n")
             # Update user verified_at field
             self.repository.update_user(user)
 
         # Return with required fields
         return AuthUserResponse(
-            email=user.email,
             token=TokenResponse(**vars(new_token))
         )

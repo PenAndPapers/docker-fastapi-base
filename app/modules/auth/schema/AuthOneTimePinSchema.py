@@ -26,4 +26,5 @@ class OneTimePinRequest(BaseModel):
 class OneTimePinResponse(BaseModel):
     email: EmailStr
     token: TokenResponse
-    message: str
+
+    model_config = { "from_attributes": True }

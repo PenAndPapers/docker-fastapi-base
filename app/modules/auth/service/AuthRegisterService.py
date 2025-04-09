@@ -49,7 +49,7 @@ class AuthRegisterService:
         stored_device = self.device_service.store_device(user.id, device_info)
 
         # We set to False as user need to verifiy their email
-        stored_token = self.token_service.store_token(user.id, user.email, False)
+        stored_token = self.token_service.store_token(user.id, user.uuid, False)
 
         # Generate a unique seed using user ID, token, timestamp and a random nonce
         nonce = secrets.token_hex(16)  # Add extra randomness
@@ -76,7 +76,6 @@ class AuthRegisterService:
         self.send_register_email_verification()
 
         return AuthUserResponse(
-            email=user.email,
             token=TokenResponse(**vars(stored_token)),
         )
 

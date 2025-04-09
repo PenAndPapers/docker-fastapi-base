@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from .AuthBaseSchema import AuthBase
 from .AuthTokenSchema import TokenResponse
 from passlib.context import CryptContext
@@ -13,13 +13,12 @@ class RegisterRequest(AuthBase):
 
 class RegisterResponseBasic(BaseModel):
     id: int
-    email: EmailStr
+    uuid: str
 
     model_config = {"from_attributes": True}
 
 
 class RegisterResponse(BaseModel):
-    email: EmailStr
     token: TokenResponse
 
     model_config = {"from_attributes": True}

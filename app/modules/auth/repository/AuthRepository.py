@@ -43,7 +43,7 @@ class AuthRepository:
         # Create user with filtered data
         user = self.user_repository.create(user_request)
 
-        return RegisterResponseBasic(id=user.id, email=user.email)
+        return RegisterResponseBasic(id=user.id, uuid=user.uuid)
 
     def update_user(self, data: UserUpdateRequest) -> UserResponse:
         """Update user"""
@@ -155,3 +155,8 @@ class AuthRepository:
         """Get user by ID"""
         user = self.user_repository.get_one(user_id)
         return UserResponse(**vars(user))
+
+    def get_user_by_filter(self, filter_dict: dict) -> UserResponse:
+        """Get user by filter"""
+        user = self.user_repository.get_by_filter(filter_dict)
+        return UserResponse(**vars(user)) if user else None

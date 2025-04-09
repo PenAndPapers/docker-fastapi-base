@@ -67,5 +67,4 @@ class AuthBase(BaseModel):
 
 
 class AuthUserResponse(BaseModel):
-    email: EmailStr
     token: TokenResponse

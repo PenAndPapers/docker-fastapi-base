@@ -18,7 +18,7 @@ class AuthTokenPolicy:
         raise UnauthorizedError(detail=detail)
 
     def _generate_token(
-        self, user_id: int, email: str, is_token_verified: bool = False
+        self, uuid: str, is_token_verified: bool = False
     ) -> GenerateTokenResponse:
         access_token_expires = datetime.utcnow() + timedelta(
             minutes=self.access_token_expire_minutes
@@ -28,8 +28,7 @@ class AuthTokenPolicy:
         )
 
         token_data = {
-            "sub": str(user_id),
-            "email": email,
+            "sub": uuid,
             "verified": is_token_verified,
         }
 
