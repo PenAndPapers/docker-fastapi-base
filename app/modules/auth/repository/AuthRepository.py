@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app.core import UnauthorizedError
 from app.database import DatabaseRepository
-from app.modules.user.model import User
+from app.modules.user.model import UserModel
 from app.modules.user.schema import UserCreateRequest, UserUpdateRequest, UserResponse
 from ..model import AuthDeviceModel, AuthTokenModel, AuthVerificationModel
 from ..schema import (
@@ -28,7 +28,7 @@ from ..schema import (
 class AuthRepository:
     def __init__(self, db: Session):
         self.db = db
-        self.user_repository = DatabaseRepository(db, User)
+        self.user_repository = DatabaseRepository(db, UserModel)
         self.device_repository = DatabaseRepository(db, AuthDeviceModel)
         self.token_repository = DatabaseRepository(db, AuthTokenModel)
         self.verification_repository = DatabaseRepository(db, AuthVerificationModel)

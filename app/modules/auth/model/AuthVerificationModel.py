@@ -35,6 +35,6 @@ class AuthVerificationModel(AuthBaseModel):
     )
 
     # Relationships
-    user = relationship("User", back_populates="verifications")
-    token = relationship("AuthToken", back_populates="verifications")
-    device = relationship("AuthDevice", back_populates="verifications")
+    user = relationship("UserModel", back_populates="verifications")
+    token = relationship("AuthTokenModel", back_populates="verifications")
+    device = relationship("AuthDeviceModel", back_populates="verifications")

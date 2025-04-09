@@ -15,8 +15,8 @@ class AuthTokenModel(AuthBaseModel):
     __table_args__ = (Index("idx_auth_tokens_expires_at", "expires_at"),)
 
     # Relationship to user
-    user = relationship("User", back_populates="auth_tokens")
+    user = relationship("UserModel", back_populates="auth_tokens")
 
     # Add this to your relationships
     # Add this relationship
-    verifications = relationship("AuthVerification", back_populates="token")
+    verifications = relationship("AuthVerificationModel", back_populates="token")

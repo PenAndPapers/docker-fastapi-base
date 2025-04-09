@@ -4,7 +4,7 @@ from uuid import uuid4
 from app.database import Base
 
 
-class User(Base):
+class UserModel(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -34,11 +34,11 @@ class User(Base):
 
     # Relationships
     auth_tokens = relationship(
-        "AuthToken", back_populates="user", cascade="all, delete-orphan"
+        "AuthTokenModel", back_populates="user", cascade="all, delete-orphan"
     )
     devices = relationship(
-        "AuthDevice", back_populates="user", cascade="all, delete-orphan"
+        "AuthDeviceModel", back_populates="user", cascade="all, delete-orphan"
     )
     verifications = relationship(
-        "AuthVerification", back_populates="user", cascade="all, delete-orphan"
+        "AuthVerificationModel", back_populates="user", cascade="all, delete-orphan"
     )

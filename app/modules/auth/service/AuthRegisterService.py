@@ -1,9 +1,9 @@
-import re
 import secrets
 from hashlib import sha256
 from datetime import datetime, timezone, timedelta
 from time import time
 from fastapi import HTTPException, status
+from passlib.context import CryptContext
 from ..constants import VerificationTypeEnum
 from ..schema import (
     AuthUserResponse,
@@ -22,6 +22,9 @@ class AuthRegisterService:
         self.repository = repository
         self.device_service = AuthDeviceService(repository)
         self.token_service = AuthTokenService(repository)
+        self.pwd_context = CryptContext(
+            schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=14
+        )
 
     def register(self, data: RegisterRequest) -> AuthUserResponse:
         """Register"""

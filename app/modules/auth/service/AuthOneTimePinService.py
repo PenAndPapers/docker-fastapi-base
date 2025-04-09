@@ -108,8 +108,13 @@ class AuthOneTimePinService:
 
         # Update user's email verification status
         if new_token and verification.type == VerificationTypeEnum.EMAIL_SIGNUP:
+            user_dict = user.model_dump()
+            user_dict.pop("is_verified", None)
+            user_dict.pop("status", None)
+            user_dict.pop("verified_at", None)
+            user_dict.pop("updated_at", None)
             user = UserUpdateRequest(
-                **vars(user),
+                **user_dict,
                 is_verified=True,
                 status=UserStatusEnum.ACTIVE,
                 verified_at=current_time,
