@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
-from .AuthBase import AuthBase
-from .AuthToken import TokenResponse
+from .AuthBaseSchema import AuthBase
+from .AuthTokenSchema import TokenResponse
 from passlib.context import CryptContext
 
 

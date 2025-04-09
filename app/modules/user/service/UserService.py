@@ -2,7 +2,7 @@ from typing import List
 from .UserPolicy import UserPolicy
 from ..repository.UserRepository import UserRepository
 from ..model import User
-from ..schema import UserCreateRequest, UserUpdate
+from ..schema import UserCreateRequest, UserUpdateRequest
 
 
 class UserService:
@@ -22,7 +22,7 @@ class UserService:
         """Get a record by its ID."""
         return self.repository.get_by_id(id)
 
-    def update(self, id: int, data: UserUpdate) -> User:
+    def update(self, id: int, data: UserUpdateRequest) -> User:
         """Update a record by its ID."""
         self.get_by_id(id)
         return self.repository.update(id, data)

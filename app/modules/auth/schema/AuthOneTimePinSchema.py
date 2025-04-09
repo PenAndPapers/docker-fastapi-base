@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
-from .AuthToken import TokenResponse
+from .AuthTokenSchema import TokenResponse
 
 
 class OneTimePinRequest(BaseModel):

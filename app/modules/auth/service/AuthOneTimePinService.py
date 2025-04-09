@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from app.core import UnauthorizedError
 from ..constants import TokenTypeEnum, VerificationTypeEnum

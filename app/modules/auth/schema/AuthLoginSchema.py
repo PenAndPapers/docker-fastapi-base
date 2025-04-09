@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
-from .AuthBase import AuthBase, AuthUserResponse
-from .AuthToken import TokenResponse
+from .AuthBaseSchema import AuthBase, AuthUserResponse
+from .AuthTokenSchema import TokenResponse
 
 
 class LoginVerificationResponse(BaseModel):

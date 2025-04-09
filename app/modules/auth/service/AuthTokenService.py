@@ -3,7 +3,6 @@ from ..constants import TokenTypeEnum
 from ..schema import (
     Token,
     TokenRequest,
-    TokenUpdateRequest,
     TokenResponse,
 )
 

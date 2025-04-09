@@ -8,10 +8,10 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import relationship
-from .Auth import Auth
+from .AuthBaseModel import AuthBaseModel
 
 
-class AuthDeviceModel(Auth):
+class AuthDeviceModel(AuthBaseModel):
     __tablename__ = "auth_devices"
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))

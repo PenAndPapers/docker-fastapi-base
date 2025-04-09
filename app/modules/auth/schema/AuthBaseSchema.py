@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from .AuthToken import TokenResponse
+from .AuthTokenSchema import TokenResponse
 
 
 class AuthBase(BaseModel):

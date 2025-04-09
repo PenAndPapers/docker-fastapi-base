@@ -1,5 +1,5 @@
 class AuthLogoutService:
-    def logout(self, data: LogoutRequest) -> LogoutResponse:
+    def logout(self) -> None:
         """Logout user"""
         # TODO: Implement logout logic
         pass

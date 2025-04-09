@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
+from app.core import BasePaginationParams
 
 
 class UserBase(BaseModel):
@@ -21,3 +22,23 @@ class UserBase(BaseModel):
     deleted_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+class UserCreateRequest(UserBase):
+    id: int | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class UserUpdateRequest(UserBase):
+    id: int | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class UserResponse(UserBase):
+    model_config = {"from_attributes": True}
+
+
+class UserPaginationParams(BasePaginationParams):
+    pass

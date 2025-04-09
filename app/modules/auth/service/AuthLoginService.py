@@ -1,12 +1,10 @@
 from fastapi import HTTPException, status
-from app.core import UnauthorizedError
 from ..constants import VerificationTypeEnum
 from ..repository import AuthRepository
 from ..schema import (
     DeviceInfo,
     LoginRequest,
     LoginResponse,
-    TokenRequest,
     TokenResponse
 )
 from .AuthDeviceService import AuthDeviceService
@@ -30,7 +28,7 @@ class AuthLoginService:
                 device_id=data.device_id,
                 client_info=data.client_info,
             )
-            stored_device = self.device_service.handle_store_device(auth_user.id, device_info)
+            stored_device = self.device_service.store_device(auth_user.id, device_info)
 
             # We set to False as user need to verifiy their email
             stored_token = self.token_service.store_token(auth_user.id, False)

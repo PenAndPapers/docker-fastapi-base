@@ -10,11 +10,11 @@ from sqlalchemy import (
     CheckConstraint,
     text,
 )
-from .Auth import Auth
+from .AuthBaseModel import AuthBaseModel
 from ..constants import VerificationTypeEnum
 
 
-class AuthVerificationModel(Auth):
+class AuthVerificationModel(AuthBaseModel):
     __tablename__ = "auth_verifications"
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))

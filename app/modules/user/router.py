@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends
-from .schema import UserCreateRequest, UserUpdate, UserResponse
+from .schema import UserCreateRequest, UserUpdateRequest, UserResponse
 from .service import UserService
 from .providers import get_user_service
 
@@ -29,7 +29,7 @@ def get_by_id(id: int, service: UserService = Depends(get_user_service)):
 @router.patch("/{id}", response_model=UserResponse)
 def update(
     id: int,
-    data: UserUpdate,
+    data: UserUpdateRequest,
     service: UserService = Depends(get_user_service),
 ):
     pass

@@ -1,9 +1,9 @@
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
-from .Auth import Auth
+from .AuthBaseModel import AuthBaseModel
 
 
-class AuthTokenModel(Auth):
+class AuthTokenModel(AuthBaseModel):
     __tablename__ = "auth_tokens"
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
