@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from fastapi import HTTPException, status
-from app.core import UnauthorizedError
+from app.modules.user.schema.UserSchema import UserResponse
+from app.core import BadRequestError, UnauthorizedError
 from app.modules.user.schema import UserUpdateRequest
 from app.modules.user.constants import UserStatusEnum
 from ..constants import TokenTypeEnum, VerificationTypeEnum
@@ -25,26 +25,19 @@ class AuthOneTimePinService:
     def one_time_pin(self, data: OneTimePinRequest) -> AuthUserResponse:
         """Verify user's one-time-pin"""
         try:
-            payload = self.token_policy._verify_token(
+            token = self.token_policy._verify_token(
                 data.access_token, token_type=TokenTypeEnum.ACCESS
             )
 
-            print("\n\n\n\n", payload, "\n\n\n\n")
-
-            uuid = payload["sub"]  # Extract and convert to integer
+            uuid = token["sub"]
         except (UnauthorizedError, ValueError):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid access token"
-            )
+            raise BadRequestError("Invalid access token")
 
         # Get user
         user = self.repository.get_user_by_filter({ "uuid": uuid, "deleted_at": None })
-
+        
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User not found",
-            )
+            raise BadRequestError("User not found")
 
         # Check if verification code exists and is valid
         verification = self.repository.get_verification_code({
@@ -52,30 +45,22 @@ class AuthOneTimePinService:
             "code": data.verification_code,
             "deleted_at": None
         })
+        current_time = datetime.now(timezone.utc)
 
         # Validate verification code if valid/exists
         if not verification:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid verification code",
-            )
+            raise BadRequestError("Invalid verification code")
 
         # Make the comparison using timezone-aware datetimes
-        if datetime.now(timezone.utc) > verification.expires_at:
+        if current_time > verification.expires_at:
             # TODO update verification deleted_at field make it soft delete
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Verification code expired",
-            )
+            raise BadRequestError("Verification code expired")
 
         # Validate attempts and expiration
         if verification.attempts >= 3:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Too many attempts"
-            )
+            raise BadRequestError("Too many attempts")
 
         attempts = verification.attempts + 1
-        current_time = datetime.now(timezone.utc)
 
         # Get the user's current token
         current_token = self.repository.get_token({
@@ -111,23 +96,25 @@ class AuthOneTimePinService:
 
         # Update user's email verification status
         if new_token and verification.type == VerificationTypeEnum.EMAIL_SIGNUP:
-            user_dict = user.model_dump()
-            user_dict.pop("is_verified", None)
-            user_dict.pop("status", None)
-            user_dict.pop("verified_at", None)
-            user_dict.pop("updated_at", None)
-            user = UserUpdateRequest(
-                **user_dict,
-                is_verified=True,
-                status=UserStatusEnum.ACTIVE,
-                verified_at=current_time,
-                updated_at=current_time,
-            )
-
-            # Update user verified_at field
-            self.repository.update_user(user)
+            self.verify_new_user(user)
 
         # Return with required fields
         return AuthUserResponse(
             token=TokenResponse(**vars(new_token))
         )
+
+
+    def verify_new_user(self, user: UserResponse):
+        """Set new user account as verified account"""
+        current_time = datetime.now(timezone.utc)
+
+        user_dict = user.model_dump()
+        user_dict["is_verified"] = True
+        user_dict["status"] = UserStatusEnum.ACTIVE
+        user_dict["verified_at"] = current_time
+        user_dict["updated_at"] = current_time
+
+        user = UserUpdateRequest(**user_dict)
+
+        # Update user verified_at field
+        self.repository.update_user(user)

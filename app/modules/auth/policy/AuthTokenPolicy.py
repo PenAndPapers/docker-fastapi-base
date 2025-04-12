@@ -13,10 +13,6 @@ class AuthTokenPolicy:
         self.access_token_expire_minutes = app_settings.jwt_access_token_expire_minutes
         self.refresh_token_expire_days = app_settings.jwt_refresh_token_expire_days
 
-    def _raise_token_error(self, detail: str) -> None:
-        """Raise a standardized token validation error"""
-        raise UnauthorizedError(detail=detail)
-
     def _generate_token(
         self, uuid: str, is_token_verified: bool = False
     ) -> GenerateTokenResponse:
@@ -98,27 +94,27 @@ class AuthTokenPolicy:
             # Verify token type
             token_type_in_payload = payload.get("type")
             if not token_type_in_payload:
-                self._raise_token_error("Token type missing")
+                UnauthorizedError(detail="Token type missing")
 
             if token_type_in_payload != token_type:
-                self._raise_token_error(
-                    f"Invalid token type: expected {token_type}, got {token_type_in_payload}"
+                UnauthorizedError(
+                    detail=f"Invalid token type: expected {token_type}, got {token_type_in_payload}"
                 )
 
             # Verify subject claim
             if not payload.get("sub"):
-                self._raise_token_error("Invalid token: missing subject claim")
+                 UnauthorizedError(detail="Invalid token: missing subject claim")
 
             return payload  # Return full payload instead of just subject
 
         except jwt.ExpiredSignatureError:
-            self._raise_token_error("Token has expired")
+            UnauthorizedError(detail="Token has expired")
         except jwt.InvalidAudienceError:
-            self._raise_token_error(
-                f"Invalid token audience: expected {app_settings.app_audience}"
+            UnauthorizedError(
+                detail=f"Invalid token audience: expected {app_settings.app_audience}"
             )
         except jwt.InvalidTokenError as e:
-            self._raise_token_error(f"Invalid token: {str(e)}")
+            UnauthorizedError(detail=f"Invalid token: {str(e)}")
 
     def _verify_token_refresh_eligibility(self, access_token: str) -> None:
         """
