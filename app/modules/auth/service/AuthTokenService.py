@@ -33,7 +33,7 @@ class AuthTokenService:
         return self.store_token(data.user_id)
 
     def store_token(
-        self, user_id: int, uuid: str, access_token: str, is_token_verified: bool = False
+        self, user_id: int, uuid: str, is_token_verified: bool = False
     ) -> Token:
         """Handle user token generation and storage"""
 

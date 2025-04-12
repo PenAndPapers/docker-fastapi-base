@@ -2,8 +2,8 @@ import secrets
 from hashlib import sha256
 from datetime import datetime, timezone, timedelta
 from time import time
-from app.core import BadRequestError
 from passlib.context import CryptContext
+from app.core import BadRequestError
 from ..constants import VerificationTypeEnum
 from ..schema import (
     AuthUserResponse,

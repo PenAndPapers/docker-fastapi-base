@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
-from app.modules.user.schema.UserSchema import UserResponse
 from app.core import BadRequestError, UnauthorizedError
-from app.modules.user.schema import UserUpdateRequest
 from app.modules.user.constants import UserStatusEnum
+from app.modules.user.schema import UserResponse, UserUpdateRequest
 from ..constants import TokenTypeEnum, VerificationTypeEnum
 from ..schema import (
     AuthUserResponse,
