@@ -14,70 +14,141 @@ class DatabaseRepository:
 
     def query(self) -> Query[ModelType]:
         """
-        Return a query object for the given model.
-        Raise a NotFoundError if the items are not found.
+        Get a query object for the given model.
+
+        Returns:
+            Query object for the given model.
+
+        Raises:
+            DatabaseError if the items are not found.
         """
         try:
             return self.db.query(self.model)
         except Exception as e:
-            raise DatabaseError(detail=f"Error querying items: {e}")
+            raise DatabaseError(detail=f"Error: {e}")
 
-    def get_by_filter(self, filters: dict) -> ModelType | None:
+    def _get_filtered_query(self, filters: dict) -> Query:
         """
-        Get one item by filter criteria.
+        Build a filtered query based on filter criteria
+
+        Args:
+            filters: Dictionary of filter criteria.
+
+        Returns:
+            Filtered query object
+        """
+        query = self.query()
+        for field, value in filters.items():
+            query = query.filter(getattr(self.model, field) == value)
+        return query
+
+    def get_by_filter(self, filters: dict) -> list[ModelType] | None:
+        """
+        Get multiple records by filter criteria.
         Example: get_by_filter({"user_id": 1, "code": "123456"})
-        Returns None if no item is found.
+
+        Args:
+            filters: Dictionary of filter criteria.
+        
+        Returns: List of records or None if no records found.
+
+        Raises:
+            DatabaseError: If there is an error querying the database
         """
         try:
-            query = self.query()
-            for field, value in filters.items():
-                query = query.filter(getattr(self.model, field) == value)
-            return query.first()
+            return self._get_filtered_query(filters).all()
         except Exception as e:
-            raise DatabaseError(detail=f"Error getting item by filter: {e}")
+            raise DatabaseError(detail=f"Error: {e}")
 
-    def get_one(self, id: int) -> ModelType | None:
+    def get_one_by_filter(self, filters: dict) -> ModelType | None:
         """
-        Get one item by id.
+        Get one record by filter criteria.
+        Example: get_one_by_filter({"user_id": 1, "code": "123456"})
+
+        Args:
+            filters: Dictionary of filter criteria.
+        
+        Returns: Single record or None if no record found.
+
+        Raises:
+            DatabaseError: If there is an error querying the database
+        """
+        try:
+            return self._get_filtered_query(filters).first()
+        except Exception as e:
+            raise DatabaseError(detail=f"Error: {e}")
+
+    def get_one(self, id: int) -> ModelType:
+        """
+        Get one record by id.
         Using filter() instead of get() for future RLS compatibility.
-        Raise a NotFoundError if the item is not found.
+
+        Args:
+            id: ID of the record to retrieve.
+
+        Returns:
+            Record with the given id.
+
+        Raises:
+            NotFoundError: If the record is not found
+            DatabaseError: If there is an error querying the database
         """
-        item = self.db.query(self.model).filter(self.model.id == id).first()
+        try:
+            record = self.db.query(self.model).filter(self.model.id == id).first()
 
-        if item is None:
-            raise NotFoundError(
-                detail=f"Item with id {id} not found in {self.model.__name__}"
-            )
+            if record is None:
+                raise NotFoundError(
+                    detail=f"Record with id {id} not found in {self.model.__name__}"
+                )
 
-        return item
+            return record
+        except NotFoundError:
+            raise
+        except Exception as e:
+            raise DatabaseError(detail=f"Error: {e}")
 
     def create(self, data: SchemaType) -> ModelType:
         """
-        Create a new item.
+        Create a new record.
 
         Args:
             data: Pydantic model with create data
 
         Returns:
             Created model instance
+
+        Raises:
+            DatabaseError: If there is an error creating the record
         """
         try:
-            item = self.model(**data.model_dump())
-            self.db.add(item)
+            record = self.model(**data.model_dump())
+            self.db.add(record)
             self.db.commit()
-            self.db.refresh(item)
-            return item
+            self.db.refresh(record)
+            return record
         except Exception as e:
             self.db.rollback()
-            raise DatabaseError(detail=f"Error creating item: {e}")
+            raise DatabaseError(detail=f"Error creating record: {e}")
 
     def update(self, id: int, data: SchemaType) -> ModelType:
         """
-        Update an existing item.
+        Update an existing record.
         Only updates fields that were set in the input data.
+
+        Args:
+            id: ID of the item to update
+            data: Pydantic model with update data
+
+        Returns:
+            Updated model instance
+
+        Raises:
+            NotFoundError: If the record is not found
+            BadRequestError: If no update data is provided
+            DatabaseError: If there is an error updating the record
         """
         try:
-            item = self.get_one(id)
+            record = self.get_one(id)
             update_data = data.model_dump(
                 exclude_unset=True
             )  # Only update fields that are provided
@@ -86,44 +157,85 @@ class DatabaseRepository:
                 raise BadRequestError(detail="No data to update")
 
             for field, value in update_data.items():
-                setattr(item, field, value)
+                setattr(record, field, value)
 
             self.db.commit()
-            self.db.refresh(item)
-            return item
+            self.db.refresh(record)
+            return record
         except Exception as e:
             self.db.rollback()
             raise DatabaseError(detail=f"Error updating item: {e}")
 
     def update_by_filter(self, filters: dict, data: SchemaType) -> ModelType:
         """
-        Update an item by filter criteria.
+        Update an record by filter criteria.
         Example: update_by_filter({"user_id": 1, "code": "123456"}, update_data)
         """
         try:
-            # Get the item using filters
+            # Get the record using filters
             query = self.query()
             for field, value in filters.items():
                 query = query.filter(getattr(self.model, field) == value)
 
-            item = query.first()
-            if not item:
-                raise NotFoundError(detail="Item not found with given filters")
+            record = query.first()
+            if not record:
+                raise NotFoundError(detail="Record not found with given filters")
 
-            # Update the item
+            # Update the record with the provided data
             update_data = data.model_dump(exclude_unset=True)
             if not update_data:
                 raise BadRequestError(detail="No data to update")
 
             for field, value in update_data.items():
-                setattr(item, field, value)
+                setattr(record, field, value)
 
             self.db.commit()
-            self.db.refresh(item)
-            return item
+            self.db.refresh(record)
+            return record
         except Exception as e:
             self.db.rollback()
-            raise DatabaseError(detail=f"Error updating item by filter: {e}")
+            raise DatabaseError(detail=f"Error updating record by filter: {e}")
+
+    def update_multiple_by_filter(self, filters: dict, data: SchemaType) -> list[ModelType]:
+        """
+        Update multiple records that match the filter criteria.
+        Example: update_multiple_by_filter({"status": "pending"}, update_data)
+
+        Args:
+            filters: Dictionary of filter criteria
+            data: Pydantic model with update data
+
+        Returns:
+            List of updated model instances
+
+        Raises:
+            BadRequestError: If no update data is provided
+            DatabaseError: If there is an error updating the records
+        """
+        try:
+            # Get all matching records
+            records = self._get_filtered_query(filters).all()
+            
+            # Prepare update data
+            update_data = data.model_dump(exclude_unset=True)
+            if not update_data:
+                raise BadRequestError(detail="No data to update")
+
+            # Update all records
+            for record in records:
+                for field, value in update_data.items():
+                    setattr(record, field, value)
+
+            self.db.commit()
+            
+            # Refresh all records to get updated values
+            for record in records:
+                self.db.refresh(record)
+                
+            return records
+        except Exception as e:
+            self.db.rollback()
+            raise DatabaseError(detail=f"Error updating records by filter: {e}")
 
     def delete(self, id: int) -> bool:
         """
