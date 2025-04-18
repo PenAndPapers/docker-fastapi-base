@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.database import DatabaseRepository
-from ..model import AuthVerificationModel
+from ..model import AuthOneTimePinModel
 from ..schema import (
     VerificationRequest,
     VerificationUpdateRequest,
@@ -11,7 +11,7 @@ from ..schema import (
 class AuthRepository:
     def __init__(self, db: Session):
         self.db = db
-        self.one_time_pin_repository = DatabaseRepository(db, AuthVerificationModel)
+        self.one_time_pin_repository = DatabaseRepository(db, AuthOneTimePinModel)
 
     def store_verification_code(
         self,

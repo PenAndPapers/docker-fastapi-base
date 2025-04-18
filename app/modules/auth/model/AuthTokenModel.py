@@ -15,8 +15,7 @@ class AuthTokenModel(AuthBaseModel):
     __table_args__ = (Index("idx_auth_tokens_expires_at", "expires_at"),)
 
     # Relationship to user
-    user = relationship("UserModel", back_populates="auth_tokens")
+    user = relationship("UserModel", back_populates="tokens")
 
-    # Add this to your relationships
-    # Add this relationship
-    verifications = relationship("AuthVerificationModel", back_populates="token")
+    # Relationship to one time pin
+    one_time_pins = relationship("AuthOneTimePinModel", back_populates="token")

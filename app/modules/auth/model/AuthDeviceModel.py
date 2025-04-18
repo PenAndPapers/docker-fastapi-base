@@ -24,5 +24,5 @@ class AuthDeviceModel(AuthBaseModel):
     # Relationship to user
     user = relationship("UserModel", back_populates="devices")
 
-    # Add this relationship
-    verifications = relationship("AuthVerificationModel", back_populates="device")
+    # Relationshp to one time pin
+    one_time_pins = relationship("AuthOneTimePinModel", back_populates="device")

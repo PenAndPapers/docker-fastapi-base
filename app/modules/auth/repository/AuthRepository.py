@@ -4,7 +4,7 @@ from app.core import UnauthorizedError
 from app.database import DatabaseRepository
 from app.modules.user.model import UserModel
 from app.modules.user.schema import UserCreateRequest, UserUpdateRequest, UserResponse
-from ..model import AuthDeviceModel, AuthTokenModel, AuthVerificationModel
+from ..model import AuthDeviceModel, AuthTokenModel, AuthOneTimePinModel
 from ..schema import (
     DeviceRequest,
     DeviceResponse,
@@ -18,9 +18,9 @@ from ..schema import (
     TokenRequest,
     TokenResponse,
     TokenUpdateRequest,
-    VerificationRequest,
-    VerificationUpdateRequest,
-    VerificationResponse,
+    OneTimePinRequest,
+    OneTimePinUpdateRequest,
+    OneTimePinResponse,
 )
 
 
@@ -30,7 +30,7 @@ class AuthRepository:
         self.user_repository = DatabaseRepository(db, UserModel)
         self.device_repository = DatabaseRepository(db, AuthDeviceModel)
         self.token_repository = DatabaseRepository(db, AuthTokenModel)
-        self.verification_repository = DatabaseRepository(db, AuthVerificationModel)
+        self.one_time_pin_repository = DatabaseRepository(db, AuthOneTimePinModel)
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def register(self, data: RegisterRequest) -> RegisterResponseBasic:
@@ -103,35 +103,35 @@ class AuthRepository:
         self.device_repository.delete_by_filter({"user_id": user_id})
         self.db.flush()
 
-    def store_verification_code(
+    def store_one_time_pin_code(
         self,
-        verification_data: VerificationRequest
-    ) -> VerificationResponse:
+        one_time_pin_data: OneTimePinRequest
+    ) -> OneTimePinResponse:
         """Store verification code"""
-        verification = self.verification_repository.create(verification_data)
-        return VerificationResponse(**vars(verification))
+        one_time_pin = self.one_time_pin_repository.create(one_time_pin_data)
+        return OneTimePinResponse(**vars(one_time_pin))
 
-    def get_verification_code(
+    def get_one_time_pin_code(
         self, filter_dict: dict
-    ) -> VerificationResponse:
+    ) -> OneTimePinResponse:
         """Get verification code and increment attempt counter"""
-        verification = self.verification_repository.get_by_filter(filter_dict)
+        one_time_pin = self.one_time_pin_repository.get_by_filter(filter_dict)
 
-        if verification:
+        if one_time_pin:
             # Convert SQLAlchemy model to dict, then to VerificationResponse
-            return VerificationResponse(**vars(verification))
+            return OneTimePinResponse(**vars(one_time_pin))
 
         return None
 
     def update_verification_code(
-        self, verification: VerificationUpdateRequest
-    ) -> VerificationResponse:
+        self, verification: OneTimePinUpdateRequest
+    ) -> OneTimePinResponse:
         """Update verification code"""
         updated_verification = self.verification_repository.update(
             verification.id, verification
         )
 
-        return VerificationResponse(**vars(updated_verification))
+        return OneTimePinResponse(**vars(updated_verification))
 
     def invalidate_verification_code(self) -> None:
         """Invalidate verification code"""

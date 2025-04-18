@@ -33,12 +33,12 @@ class UserModel(Base):
     deleted_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
-    auth_tokens = relationship(
+    tokens = relationship(
         "AuthTokenModel", back_populates="user", cascade="all, delete-orphan"
     )
     devices = relationship(
         "AuthDeviceModel", back_populates="user", cascade="all, delete-orphan"
     )
-    verifications = relationship(
-        "AuthVerificationModel", back_populates="user", cascade="all, delete-orphan"
+    one_time_pins = relationship(
+        "AuthOneTimePinModel", back_populates="user", cascade="all, delete-orphan"
     )
