@@ -1,8 +1,8 @@
-from ..repository import AuthRepository
+from ..repository import AuthDeviceRepository
 from ..schema import DeviceInfo, DeviceRequest, DeviceResponse
 
 class AuthDeviceService:
-  def __init__(self, repository: AuthRepository):
+  def __init__(self, repository: AuthDeviceRepository):
     self.repository = repository
 
   def store_device(self, user_id: int, device: DeviceInfo) -> DeviceResponse:

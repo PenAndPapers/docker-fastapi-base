@@ -9,7 +9,7 @@ from ..schema import (
 )
 
 
-class AuthRepository:
+class AuthTokenRepository:
     def __init__(self, db: Session):
         self.db = db
         self.token_repository = DatabaseRepository(db, AuthTokenModel)

@@ -14,7 +14,7 @@ from ..schema import (
 )
 
 
-class AuthRepository:
+class AuthUserRepository:
     def __init__(self, db: Session):
         self.db = db
         self.user_repository = DatabaseRepository(db, UserModel)

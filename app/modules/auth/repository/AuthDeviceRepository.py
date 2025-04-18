@@ -6,7 +6,7 @@ from ..schema import (
 )
 
 
-class AuthRepository:
+class AuthDeviceRepository:
     def __init__(self, db: Session):
         self.db = db
         self.device_repository = DatabaseRepository(db, AuthDeviceModel)

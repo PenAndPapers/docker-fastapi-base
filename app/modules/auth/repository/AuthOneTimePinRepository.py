@@ -8,42 +8,63 @@ from ..schema import (
 )
 
 
-class AuthRepository:
+class AuthOneTimePinRepository:
     def __init__(self, db: Session):
         self.db = db
         self.one_time_pin_repository = DatabaseRepository(db, AuthOneTimePinModel)
 
-    def store_verification_code(
+    def store_one_time_pin(
         self,
-        verification_data: VerificationRequest
+        otp_data: VerificationRequest
     ) -> VerificationResponse:
-        """Store verification code"""
-        verification = self.verification_repository.create(verification_data)
-        return VerificationResponse(**vars(verification))
+        """
+        Store one time pin
+        
+        Args:
+            otp_data (VerificationRequest): One time pin data
 
-    def get_verification_code(
-        self, filter_dict: dict
+        Returns:
+            VerificationResponse: One time pin response
+        """
+        otp = self.one_time_pin_repository.create(otp_data)
+
+        return VerificationResponse(**vars(otp)) if otp else None
+
+    def get_one_time_pin(
+        self, otp_filter_dict: dict
     ) -> VerificationResponse:
-        """Get verification code and increment attempt counter"""
-        verification = self.verification_repository.get_by_filter(filter_dict)
+        """
+        Get one time pin
 
-        if verification:
-            # Convert SQLAlchemy model to dict, then to VerificationResponse
-            return VerificationResponse(**vars(verification))
+        Args:
+            otp_filter_dict (dict): One time pin filter dict
 
-        return None
+        Returns:
+            VerificationResponse: One time pin response
+        """
+        otp = self.one_time_pin_repository.get_by_filter(otp_filter_dict)
 
-    def update_verification_code(
-        self, verification: VerificationUpdateRequest
+        return VerificationResponse(**vars(otp)) if otp else None
+
+    def update_one_time_pin(
+        self, otp_data: VerificationUpdateRequest
     ) -> VerificationResponse:
-        """Update verification code"""
-        updated_verification = self.verification_repository.update(
-            verification.id, verification
+        """
+        Update one time pin
+        
+        Args:
+            otp_data (VerificationUpdateRequest): One time pin data
+            
+        Returns:
+            VerificationResponse: One time pin response
+        """
+        updated_otp = self.one_time_pin_repository.update(
+            otp_data.id, otp_data
         )
 
-        return VerificationResponse(**vars(updated_verification))
+        return VerificationResponse(**vars(updated_otp)) if updated_otp else None
 
-    def invalidate_verification_code(self) -> None:
-        """Invalidate verification code"""
+    def invalidate_one_time_pin(self) -> None:
+        """Invalidate one time pin"""
         # TODO: Implement
         pass

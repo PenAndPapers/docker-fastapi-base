@@ -23,6 +23,16 @@ class OneTimePinRequest(BaseModel):
     )
 
 
+class OneTimePinUpdateRequest(BaseModel):
+    id: int
+    attempts: int
+    updated_at: datetime
+    verified_at: datetime | None = None
+    deleted_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
 class OneTimePinResponse(BaseModel):
     email: EmailStr
     token: TokenResponse
