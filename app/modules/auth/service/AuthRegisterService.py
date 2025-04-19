@@ -12,16 +12,23 @@ from ..schema import (
     TokenResponse,
     VerificationRequest,
 )
-from ..repository import AuthRepository
+from ..repository import AuthDeviceRepository, AuthOneTimePinRepository, AuthTokenRepository, AuthUserRepository
 from .AuthDeviceService import AuthDeviceService
 from .AuthTokenService import AuthTokenService
 
 
 class AuthRegisterService:
-    def __init__(self, repository: AuthRepository):
-        self.repository = repository
-        self.device_service = AuthDeviceService(repository)
-        self.token_service = AuthTokenService(repository)
+    def __init__(
+        self,
+        device_repository: AuthDeviceRepository,
+        one_time_pin_repository: AuthOneTimePinRepository,
+        token_repository: AuthTokenRepository,
+        user_repository: AuthUserRepository,
+    ):
+        self.device_service = AuthDeviceService(device_repository)
+        self.token_service = AuthTokenService(token_repository)
+        self.one_time_pin_repository = one_time_pin_repository
+        self.user_repository = user_repository
         self.pwd_context = CryptContext(
             schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=14
         )
@@ -33,7 +40,7 @@ class AuthRegisterService:
         hashed_data = data.with_hashed_password(self.pwd_context)
 
         # Register user (repository will handle field filtering)
-        user = self.repository.register(hashed_data)
+        user = self.user_repository.register(hashed_data)
 
         if not user:
             raise BadRequestError(detail="Register failed")
@@ -58,7 +65,7 @@ class AuthRegisterService:
         num = int.from_bytes(hash_bytes, byteorder="big")
         now = datetime.now(timezone.utc)
 
-        self.repository.store_verification_code(
+        self.one_time_pin_repository.store_one_time_pin(
             VerificationRequest(
                 user_id=user.id,
                 token_id=stored_token.id,

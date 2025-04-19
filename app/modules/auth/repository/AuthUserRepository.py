@@ -60,22 +60,50 @@ class AuthUserRepository:
 
         return LoginResponseBasic(id=user.id, uuid=user.uuid,)
 
-    def logout(self, data: LogoutRequest) -> LogoutResponse:
+
+    def logout(self):
         """Logout a user"""
         # TODO: Implement
         pass
 
-    def get_user(self, user_id: int) -> UserResponse:
-        """Get user by ID"""
-        user = self.user_repository.get_one(user_id)
-        return UserResponse(**vars(user)) if user else None
 
-    def get_user_by_filter(self, filter_dict: dict) -> UserResponse:
-        """Get user by filter"""
+    def get(self, id: int) -> UserResponse:
+        """
+        Get user by ID
+
+        Args:
+            id (int): User ID
+
+        Returns:
+            UserResponse: User response data
+        """
+        user = self.user_repository.get_one(id)
+        return UserResponse(**vars(user))
+
+
+    def get_by_filter(self, filter_dict: dict) -> UserResponse:
+        """
+        Get user by filter
+        
+        Args:
+            filter_dict (dict): Filter dictionary
+
+        Returns:
+            UserResponse: User data
+        """
         user = self.user_repository.get_by_filter(filter_dict)
-        return UserResponse(**vars(user)) if user else None
+        return UserResponse(**vars(user))
 
-    def update_user(self, data: UserUpdateRequest) -> UserResponse:
-        """Update user"""
+
+    def update(self, data: UserUpdateRequest) -> UserResponse:
+        """
+        Update user
+        
+        Args:
+            data (UserUpdateRequest): User data
+
+        Returns:
+            UserResponse: User data
+        """
         user = self.user_repository.update(data.id, data)
-        return UserResponse.model_validate(user) if user else None
+        return UserResponse.model_validate(user)

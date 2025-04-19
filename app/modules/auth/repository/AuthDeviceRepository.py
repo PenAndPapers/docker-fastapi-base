@@ -11,10 +11,27 @@ class AuthDeviceRepository:
         self.db = db
         self.device_repository = DatabaseRepository(db, AuthDeviceModel)
 
-    def store_device(self, data: DeviceRequest) -> DeviceResponse:
+
+    def create(self, data: DeviceRequest) -> DeviceResponse:
         """Store device info"""
         device = self.device_repository.create(data)
         return DeviceResponse.model_validate(device)
+
+
+    def get(self):
+        """Get device info"""
+        pass
+
+
+    def update(self):
+        """Update device info"""
+        pass
+
+
+    def delete(self):
+        """Delete device info"""
+        pass
+
 
     def invalidate_user_devices(self, user_id: int) -> None:
         """Invalidate all existing devices for a user"""

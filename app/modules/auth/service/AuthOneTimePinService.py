@@ -23,12 +23,12 @@ class AuthOneTimePinService:
     def __init__(
         self,
         one_time_pin_repository: AuthOneTimePinRepository,
-        user_repository: AuthUserRepository,
         token_repository: AuthTokenRepository,
+        user_repository: AuthUserRepository,
     ) -> None:
         self.one_time_pin_repository = one_time_pin_repository
-        self.user_repository = user_repository
         self.token_repository = token_repository
+        self.user_repository = user_repository
         self.token_policy = AuthTokenPolicy()
         self.token_service = AuthTokenService(token_repository)
 
@@ -132,3 +132,33 @@ class AuthOneTimePinService:
         return AuthUserResponse(
             token=TokenResponse(**vars(new_token))
         )
+
+
+    def create():
+        """Create user one-time-pin"""
+        pass
+
+    
+    def get():
+        """Get user one-time-pin"""
+        pass
+
+
+    def update():
+        """Update user one-time-pin"""
+        pass
+
+
+    def delete():
+        """Delete user one-time-pin"""
+        pass
+
+
+    def resend():
+        """Resend user one-time-pin"""
+        pass
+
+    
+    def verify():
+        """Verify user one-time-pin"""
+        pass

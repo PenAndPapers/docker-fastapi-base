@@ -13,44 +13,39 @@ class AuthOneTimePinRepository:
         self.db = db
         self.one_time_pin_repository = DatabaseRepository(db, AuthOneTimePinModel)
 
-    def store_one_time_pin(
-        self,
-        otp_data: VerificationRequest
-    ) -> VerificationResponse:
+    def create(self, data: VerificationRequest) -> VerificationResponse:
         """
-        Store one time pin
+        Store user's one time pin
         
         Args:
-            otp_data (VerificationRequest): One time pin data
+            data (VerificationRequest): One time pin data
 
         Returns:
             VerificationResponse: One time pin response
         """
-        otp = self.one_time_pin_repository.create(otp_data)
+        otp = self.one_time_pin_repository.create(data)
 
         return VerificationResponse(**vars(otp)) if otp else None
 
-    def get_one_time_pin(
-        self, otp_filter_dict: dict
-    ) -> VerificationResponse:
+
+    def get(self, filter_dict: dict) -> VerificationResponse:
         """
-        Get one time pin
+        Get user's one time pin
 
         Args:
-            otp_filter_dict (dict): One time pin filter dict
+            filter_dict (dict): One time pin filter dict
 
         Returns:
             VerificationResponse: One time pin response
         """
-        otp = self.one_time_pin_repository.get_by_filter(otp_filter_dict)
+        otp = self.one_time_pin_repository.get_by_filter(filter_dict)
 
         return VerificationResponse(**vars(otp)) if otp else None
 
-    def update_one_time_pin(
-        self, otp_data: VerificationUpdateRequest
-    ) -> VerificationResponse:
+
+    def update(self, otp_data: VerificationUpdateRequest) -> VerificationResponse:
         """
-        Update one time pin
+        Update user's one time pin
         
         Args:
             otp_data (VerificationUpdateRequest): One time pin data
@@ -64,7 +59,8 @@ class AuthOneTimePinRepository:
 
         return VerificationResponse(**vars(updated_otp)) if updated_otp else None
 
-    def invalidate_one_time_pin(self) -> None:
-        """Invalidate one time pin"""
-        # TODO: Implement
+
+    def delete(self) -> None:
+        """Invalidate/delete user's one time pin"""
+        # TODO
         pass

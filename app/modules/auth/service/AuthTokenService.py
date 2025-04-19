@@ -5,13 +5,13 @@ from ..schema import (
     TokenRequest,
     TokenResponse,
 )
-from ..repository import AuthRepository
+from ..repository import AuthTokenRepository
 from ..policy import AuthTokenPolicy
 
 class AuthTokenService:
     def __init__(
         self,
-        repository: AuthRepository
+        repository: AuthTokenRepository
     ):
         self.repository = repository
         self.token_policy = AuthTokenPolicy()
@@ -30,9 +30,9 @@ class AuthTokenService:
         if int(user_id_from_token) != data.user_id:
             raise UnauthorizedError(detail="Token does not belong to the user")
 
-        return self.store_token(data.user_id)
+        return self.create(data.user_id)
 
-    def store_token(
+    def create(
         self, user_id: int, uuid: str, is_token_verified: bool = False
     ) -> Token:
         """Handle user token generation and storage"""
@@ -56,3 +56,17 @@ class AuthTokenService:
         stored_token.token_type = token_data.token_type
 
         return stored_token
+
+
+    def get(self):
+        """Get user token"""
+        pass
+
+
+    def update(self):
+        """Update user token"""
+        pass
+
+    def delete(self):
+        """Delete user token"""
+        pass

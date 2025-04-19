@@ -5,16 +5,31 @@ class AuthDeviceService:
   def __init__(self, repository: AuthDeviceRepository):
     self.repository = repository
 
-  def store_device(self, user_id: int, device: DeviceInfo) -> DeviceResponse:
-        """Handle user device information and storage"""
+  def create(self, user_id: int, device: DeviceInfo) -> DeviceResponse:
+      """Handle user device information and storage"""
 
-        # Store device information
-        stored_device = self.repository.store_device(
-            DeviceRequest(
-                user_id=user_id,
-                device_id=device.device_id,
-                client_info=device.client_info,
-            )
-        )
+      # Store device information
+      stored_device = self.repository.store_device(
+          DeviceRequest(
+              user_id=user_id,
+              device_id=device.device_id,
+              client_info=device.client_info,
+          )
+      )
 
-        return stored_device
+      return stored_device
+
+
+  def get(self):
+      """Get user device information"""
+      pass
+
+
+  def update(self):
+      """Update user device information"""
+      pass
+
+
+  def delete(self):
+      """Delete user device information"""
+      pass
