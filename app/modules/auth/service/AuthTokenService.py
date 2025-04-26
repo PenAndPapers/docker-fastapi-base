@@ -43,7 +43,7 @@ class AuthTokenService:
         )
 
         # Store user token
-        stored_token = self.repository.store_token(
+        stored_token = self.repository.create(
             TokenRequest(
                 user_id=user_id,
                 access_token=token_data.access_token,

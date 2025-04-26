@@ -9,7 +9,7 @@ class AuthDeviceService:
       """Handle user device information and storage"""
 
       # Store device information
-      stored_device = self.repository.store_device(
+      stored_device = self.repository.create(
           DeviceRequest(
               user_id=user_id,
               device_id=device.device_id,

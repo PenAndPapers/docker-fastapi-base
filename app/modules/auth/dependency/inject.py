@@ -46,9 +46,17 @@ def get_auth_device_service(
 
 
 def get_auth_register_service(
-    repository: AuthUserRepository = Depends(get_user_repository),
+    user_repository: AuthUserRepository = Depends(get_user_repository),
+    token_repository: AuthTokenRepository = Depends(get_token_repository),
+    one_time_pin_repository: AuthOneTimePinRepository = Depends(get_one_time_pin_repository),
+    device_repository: AuthDeviceRepository = Depends(get_device_repository),
 ) -> AuthRegisterService:
-    return AuthRegisterService(repository)
+    return AuthRegisterService(
+        one_time_pin_repository=one_time_pin_repository,
+        token_repository=token_repository,
+        user_repository=user_repository,
+        device_repository=device_repository,
+    )
 
 
 def get_auth_login_service(

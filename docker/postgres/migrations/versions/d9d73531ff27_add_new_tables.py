@@ -1,8 +1,8 @@
-"""create_default_tables
+"""add-new-tables
 
-Revision ID: a9ee974db0c2
-Revises: 
-Create Date: 2025-03-30 08:50:10.039144
+Revision ID: d9d73531ff27
+Revises: bd7f064f57dc
+Create Date: 2025-04-26 02:20:13.237668
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a9ee974db0c2'
-down_revision = None
+revision = 'd9d73531ff27'
+down_revision = 'bd7f064f57dc'
 branch_labels = None
 depends_on = None
 
@@ -30,6 +30,28 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_todos_id'), 'todos', ['id'], unique=False)
+    op.create_table('users',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('email', sa.String(), nullable=True),
+    sa.Column('password', sa.String(), nullable=False),
+    sa.Column('first_name', sa.String(), nullable=True),
+    sa.Column('last_name', sa.String(), nullable=True),
+    sa.Column('phone_number', sa.String(), nullable=True),
+    sa.Column('gender', sa.String(), nullable=True),
+    sa.Column('date_of_birth', sa.String(), nullable=True),
+    sa.Column('address', sa.String(), nullable=True),
+    sa.Column('role', sa.String(), server_default='user', nullable=True),
+    sa.Column('status', sa.String(), server_default='offline', nullable=True),
+    sa.Column('uuid', sa.String(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.Column('verified_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('uuid')
+    )
+    op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
     op.create_table('auth_devices',
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('device_id', sa.String(length=255), nullable=False),
@@ -59,7 +81,7 @@ def upgrade() -> None:
     )
     op.create_index('idx_auth_tokens_expires_at', 'auth_tokens', ['expires_at'], unique=False)
     op.create_index(op.f('ix_auth_tokens_id'), 'auth_tokens', ['id'], unique=False)
-    op.create_table('auth_verifications',
+    op.create_table('auth_one_time_pins',
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('token_id', sa.Integer(), nullable=True),
     sa.Column('device_id', sa.Integer(), nullable=True),
@@ -76,69 +98,32 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['device_id'], ['auth_devices.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['token_id'], ['auth_tokens.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code')
     )
-    op.create_index('idx_auth_verifications_device', 'auth_verifications', ['device_id'], unique=False)
-    op.create_index('idx_auth_verifications_expires', 'auth_verifications', ['expires_at'], unique=False)
-    op.create_index('idx_auth_verifications_token', 'auth_verifications', ['token_id'], unique=False)
-    op.create_index('idx_auth_verifications_user_type', 'auth_verifications', ['user_id', 'type'], unique=False)
-    op.create_index(op.f('ix_auth_verifications_id'), 'auth_verifications', ['id'], unique=False)
-    op.add_column('users', sa.Column('password', sa.String(), nullable=False))
-    op.add_column('users', sa.Column('first_name', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('last_name', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('phone_number', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('gender', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('date_of_birth', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('address', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('role', sa.String(), server_default='user', nullable=True))
-    op.add_column('users', sa.Column('status', sa.String(), server_default='offline', nullable=True))
-    op.add_column('users', sa.Column('uuid', sa.String(), nullable=False))
-    op.add_column('users', sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False))
-    op.add_column('users', sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False))
-    op.add_column('users', sa.Column('verified_at', sa.DateTime(timezone=True), nullable=True))
-    op.add_column('users', sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True))
-    op.alter_column('users', 'email',
-               existing_type=sa.VARCHAR(length=255),
-               nullable=True)
-    op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
-    op.create_unique_constraint(None, 'users', ['uuid'])
-    op.drop_column('users', 'name')
+    op.create_index('idx_auth_one_time_pins_device', 'auth_one_time_pins', ['device_id'], unique=False)
+    op.create_index('idx_auth_one_time_pins_expires', 'auth_one_time_pins', ['expires_at'], unique=False)
+    op.create_index('idx_auth_one_time_pins_token', 'auth_one_time_pins', ['token_id'], unique=False)
+    op.create_index('idx_auth_one_time_pins_user_type', 'auth_one_time_pins', ['user_id', 'type'], unique=False)
+    op.create_index(op.f('ix_auth_one_time_pins_id'), 'auth_one_time_pins', ['id'], unique=False)
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
-    op.add_column('users', sa.Column('name', sa.VARCHAR(length=255), autoincrement=False, nullable=False))
-    op.drop_constraint(None, 'users', type_='unique')
-    op.drop_index(op.f('ix_users_id'), table_name='users')
-    op.alter_column('users', 'email',
-               existing_type=sa.VARCHAR(length=255),
-               nullable=False)
-    op.drop_column('users', 'deleted_at')
-    op.drop_column('users', 'verified_at')
-    op.drop_column('users', 'updated_at')
-    op.drop_column('users', 'created_at')
-    op.drop_column('users', 'uuid')
-    op.drop_column('users', 'status')
-    op.drop_column('users', 'role')
-    op.drop_column('users', 'address')
-    op.drop_column('users', 'date_of_birth')
-    op.drop_column('users', 'gender')
-    op.drop_column('users', 'phone_number')
-    op.drop_column('users', 'last_name')
-    op.drop_column('users', 'first_name')
-    op.drop_column('users', 'password')
-    op.drop_index(op.f('ix_auth_verifications_id'), table_name='auth_verifications')
-    op.drop_index('idx_auth_verifications_user_type', table_name='auth_verifications')
-    op.drop_index('idx_auth_verifications_token', table_name='auth_verifications')
-    op.drop_index('idx_auth_verifications_expires', table_name='auth_verifications')
-    op.drop_index('idx_auth_verifications_device', table_name='auth_verifications')
-    op.drop_table('auth_verifications')
+    op.drop_index(op.f('ix_auth_one_time_pins_id'), table_name='auth_one_time_pins')
+    op.drop_index('idx_auth_one_time_pins_user_type', table_name='auth_one_time_pins')
+    op.drop_index('idx_auth_one_time_pins_token', table_name='auth_one_time_pins')
+    op.drop_index('idx_auth_one_time_pins_expires', table_name='auth_one_time_pins')
+    op.drop_index('idx_auth_one_time_pins_device', table_name='auth_one_time_pins')
+    op.drop_table('auth_one_time_pins')
     op.drop_index(op.f('ix_auth_tokens_id'), table_name='auth_tokens')
     op.drop_index('idx_auth_tokens_expires_at', table_name='auth_tokens')
     op.drop_table('auth_tokens')
     op.drop_index(op.f('ix_auth_devices_id'), table_name='auth_devices')
     op.drop_table('auth_devices')
+    op.drop_index(op.f('ix_users_id'), table_name='users')
+    op.drop_table('users')
     op.drop_index(op.f('ix_todos_id'), table_name='todos')
     op.drop_table('todos')
     # ### end Alembic commands ### 

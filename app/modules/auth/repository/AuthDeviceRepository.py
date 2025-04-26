@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.database import DatabaseRepository
+from ..model import AuthDeviceModel
 from ..schema import (
     DeviceRequest,
     DeviceResponse,

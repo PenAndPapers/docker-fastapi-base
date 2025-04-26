@@ -10,6 +10,9 @@ from app.database import Base
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../.."))
 
 # Import your models
+from app.modules.todo.model import Todo
+from app.modules.user.model import UserModel
+from app.modules.auth.model import AuthDeviceModel, AuthOneTimePinModel, AuthTokenModel
 
 # this is the Alembic Config object
 config = context.config
