@@ -64,7 +64,7 @@ def upgrade() -> None:
     sa.Column('token_id', sa.Integer(), nullable=True),
     sa.Column('device_id', sa.Integer(), nullable=True),
     sa.Column('code', sa.String(length=6), nullable=False),
-    sa.Column('type', sa.Enum('EMAIL_SIGNUP', 'EMAIL_LOGIN', 'EMAIL_RECOVERY', 'SMS_SIGNUP', 'SMS_LOGIN', 'SMS_RECOVERY', 'MFA_TOTP', 'MFA_BACKUP', 'OTP_LOGIN', name='verificationtypeenum'), nullable=False),
+    sa.Column('type', sa.Enum('EMAIL_SIGNUP', 'EMAIL_LOGIN', 'EMAIL_RECOVERY', 'SMS_SIGNUP', 'SMS_LOGIN', 'SMS_RECOVERY', 'MFA_TOTP', 'MFA_BACKUP', 'OTP_LOGIN', name='onetimepintypeenum'), nullable=False),
     sa.Column('attempts', sa.Integer(), server_default=sa.text('0'), nullable=True),
     sa.Column('expires_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.Column('verified_at', sa.DateTime(timezone=True), nullable=True),

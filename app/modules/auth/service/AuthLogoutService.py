@@ -1,8 +1,8 @@
 from typing import Any
-from ..repository import AuthRepository
+from ..repository import AuthUserRepository
 
 class AuthLogoutService:
-    def __init__(self, repository: AuthRepository):
+    def __init__(self, repository: AuthUserRepository):
         self.repository = repository
 
 

@@ -7,7 +7,7 @@ class TokenTypeEnum(str, Enum):
     REFRESH = "refresh"
 
 
-class VerificationTypeEnum(str, Enum):
+class OneTimePinTypeEnum(str, Enum):
     EMAIL_SIGNUP = "email_signup"  # Verify email during registration
     EMAIL_LOGIN = "email_login"  # 2FA during login
     EMAIL_RECOVERY = "email_recovery"  # Password recovery

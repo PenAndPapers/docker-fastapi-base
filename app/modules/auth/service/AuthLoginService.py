@@ -3,8 +3,8 @@ from hashlib import sha256
 from datetime import datetime, timezone, timedelta
 from time import time
 from app.core import BadRequestError
-from ..constants import VerificationTypeEnum
-from ..repository import AuthRepository
+from ..constants import OneTimePinTypeEnum
+from ..repository import AuthUserRepository
 from ..schema import (
     AuthUserResponse,
     DeviceInfo,
@@ -18,7 +18,7 @@ from .AuthOneTimePinService import AuthOneTimePinService
 
 
 class AuthLoginService:
-    def __init__(self, repository: AuthRepository):
+    def __init__(self, repository: AuthUserRepository):
         self.repository = repository
         self.device_service = AuthDeviceService(repository)
         self.token_service = AuthTokenService(repository)
@@ -55,7 +55,7 @@ class AuthLoginService:
                 token_id=stored_token.id,
                 device_id=stored_device.id,
                 code=format(int(str(num)[-6:]), "06d"),  # Ensure exactly 6 digits
-                type=VerificationTypeEnum.EMAIL_LOGIN,
+                type=OneTimePinTypeEnum.EMAIL_LOGIN,
                 attempts=0,
                 expires_at=now + timedelta(minutes=55),
                 updated_at=now,

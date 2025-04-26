@@ -4,8 +4,7 @@ from .inject import (
   get_auth_logout_service,
   get_auth_one_time_pin_service,
   get_auth_register_service,
-  get_auth_token_service,
-  get_auth_repository
+  get_auth_token_service
 )
 
 __all__ = [
@@ -14,6 +13,5 @@ __all__ = [
   "get_auth_logout_service",
   "get_auth_one_time_pin_service",
   "get_auth_register_service",
-  "get_auth_token_service",
-  "get_auth_repository"
+  "get_auth_token_service"
 ]

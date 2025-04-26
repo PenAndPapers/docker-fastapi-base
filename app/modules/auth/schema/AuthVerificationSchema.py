@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from app.modules.auth.constants import VerificationTypeEnum
+from app.modules.auth.constants import OneTimePinTypeEnum
 
 
 class __VerificationBase(BaseModel):
@@ -30,7 +30,7 @@ class __VerificationBase(BaseModel):
         description="Number of attempts",
         example=0,
     )
-    type: VerificationTypeEnum
+    type: OneTimePinTypeEnum
     expires_at: datetime
     verified_at: datetime | None = None
     deleted_at: datetime | None = None

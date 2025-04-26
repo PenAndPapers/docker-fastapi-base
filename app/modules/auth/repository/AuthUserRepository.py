@@ -9,8 +9,6 @@ from ..schema import (
     RegisterResponseBasic,
     LoginResponseBasic,
     LoginRequest,
-    LogoutRequest,
-    LogoutResponse,
 )
 
 

@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from time import time
 from passlib.context import CryptContext
 from app.core import BadRequestError
-from ..constants import VerificationTypeEnum
+from ..constants import OneTimePinTypeEnum
 from ..schema import (
     AuthUserResponse,
     DeviceInfo,
@@ -71,7 +71,7 @@ class AuthRegisterService:
                 token_id=stored_token.id,
                 device_id=stored_device.id,
                 code=format(int(str(num)[-6:]), "06d"),  # Ensure exactly 6 digits
-                type=VerificationTypeEnum.EMAIL_SIGNUP,
+                type=OneTimePinTypeEnum.EMAIL_SIGNUP,
                 attempts=0,
                 expires_at=now + timedelta(minutes=55),
                 updated_at=now,

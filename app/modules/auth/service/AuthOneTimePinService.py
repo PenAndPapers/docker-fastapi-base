@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from app.core import BadRequestError, UnauthorizedError
 from app.modules.user.constants import UserStatusEnum
 from app.modules.user.schema import UserResponse, UserUpdateRequest
-from ..constants import TokenTypeEnum, VerificationTypeEnum
+from ..constants import TokenTypeEnum, OneTimePinTypeEnum
 from ..schema import (
     AuthUserResponse,
     OneTimePinRequest,
@@ -125,7 +125,7 @@ class AuthOneTimePinService:
         new_token = self.token_service.store_token(user.id, user.uuid, data.access_token, True)
 
         # Update user's email verification status
-        if new_token and verification.type == VerificationTypeEnum.EMAIL_SIGNUP:
+        if new_token and verification.type == OneTimePinTypeEnum.EMAIL_SIGNUP:
             self._verify_new_user(user)
 
         # Return with required fields
