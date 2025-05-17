@@ -72,9 +72,15 @@ def get_auth_logout_service(
 
 
 def get_auth_one_time_pin_service(
-    repository: AuthOneTimePinRepository = Depends(get_one_time_pin_repository),
+    one_time_pin_repository: AuthOneTimePinRepository = Depends(get_one_time_pin_repository),
+    token_repository: AuthTokenRepository = Depends(get_token_repository),
+    user_repository: AuthUserRepository = Depends(get_user_repository),
 ) -> AuthOneTimePinService:
-    return AuthOneTimePinService(repository)
+    return AuthOneTimePinService(
+        one_time_pin_repository=one_time_pin_repository,
+        token_repository=token_repository,
+        user_repository=user_repository,
+    )
 
 
 def get_auth_token_service(

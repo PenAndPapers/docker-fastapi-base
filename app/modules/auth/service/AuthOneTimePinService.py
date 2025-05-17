@@ -65,13 +65,13 @@ class AuthOneTimePinService:
             raise BadRequestError("Invalid access token")
 
         # Get user using uuid
-        user = self.user_repository.get_user_by_filter({ "uuid": uuid, "deleted_at": None })
+        user = self.user_repository.get_by_filter({ "uuid": uuid, "deleted_at": None })
         
         if not user:
             raise BadRequestError("User not found")
 
         # Check if verification code exists and is valid
-        verification = self.one_time_pin_repository.get_one_time_pin({
+        verification = self.one_time_pin_repository.get({
             "user_id": user.id,
             "code": data.verification_code,
             "deleted_at": None
@@ -94,14 +94,14 @@ class AuthOneTimePinService:
         attempts = verification.attempts + 1
 
         # Get the user's current token
-        current_token = self.token_repository.get_token({
+        current_token = self.token_repository.get({
             "user_id": user.id,
             "access_token": data.access_token,
             "deleted_at": None
         })
 
         # Update verification code
-        self.one_time_pin_repository.update_one_time_pin(
+        self.one_time_pin_repository.update(
             OneTimePinUpdateRequest(
                 id=verification.id,
                 attempts=attempts,
@@ -112,7 +112,7 @@ class AuthOneTimePinService:
         )
 
         # Make old token inactive
-        self.token_repository.update_token(
+        self.token_repository.update(
             TokenUpdateRequest(
                 id=current_token.id,
                 is_active=False,
@@ -122,7 +122,7 @@ class AuthOneTimePinService:
         )
 
         # Generate new token with verified status
-        new_token = self.token_service.store_token(user.id, user.uuid, data.access_token, True)
+        new_token = self.token_service.create(user.id, user.uuid, data.access_token, True)
 
         # Update user's email verification status
         if new_token and verification.type == OneTimePinTypeEnum.EMAIL_SIGNUP:
