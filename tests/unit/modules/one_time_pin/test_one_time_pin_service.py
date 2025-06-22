@@ -97,3 +97,22 @@ def test_get_by_id(device_service, mock_repository, device_response_data):
     assert result.device_id == "d4f16c9a-0fb6-4a8b-a67e-46c11e51e8b1"
     assert result.client_info == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
 
+
+def test_delete_device(device_service, mock_repository):
+    # mock repository return value
+    mock_repository.delete.return_value = True
+    # call the service method
+    result = device_service.delete(1)
+    # assertions
+    mock_repository.delete.assert_called_once()
+    assert result is True
+
+
+def test_delete_device_not_found(device_service, mock_repository):
+    # mock repository return value
+    mock_repository.delete.return_value = False
+    # call the service method
+    result = device_service.delete(-1)
+    # assertions
+    mock_repository.delete.assert_called_once()
+    assert result is False

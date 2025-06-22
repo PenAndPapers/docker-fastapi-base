@@ -1,5 +1,17 @@
 from datetime import datetime
+from typing import TypedDict
 from pydantic import BaseModel, Field
+
+
+class DeviceFilter(TypedDict, total = False):
+    user_id: int | None
+    device_id: str | None
+    client_info: str | None
+    last_login: datetime | None
+    created_at: datetime | None
+    updated_at: datetime | None
+    deleted_at: datetime | None
+
 
 class DeviceInfo(BaseModel):
     device_id: str = Field(
@@ -17,6 +29,7 @@ class DeviceInfo(BaseModel):
         description="Client browser/app information",
     )
 
+
 class DeviceRequest(DeviceInfo):
   user_id: int | None = Field(default=None, description="User ID")
 
@@ -31,3 +44,4 @@ class DeviceResponse(BaseModel):
     last_login: datetime = Field(..., description="Last login timestamp")
 
     model_config = {"from_attributes": True}
+

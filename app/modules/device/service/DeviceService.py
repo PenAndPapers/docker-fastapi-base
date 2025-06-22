@@ -1,3 +1,4 @@
+from sqlalchemy import Boolean
 from ..repository import DeviceRepository
 from ..schema import DeviceRequest, DeviceResponse
 
@@ -8,14 +9,12 @@ class DeviceService:
   def create(self, device: DeviceRequest) -> DeviceResponse:
       """Handle user device information and storage"""
       stored_device = self.repository.create(device)
-
       return stored_device
 
 
   def get(self, id: int) -> DeviceResponse:
       """Get user device information"""
       device = self.repository.get(id)
-      
       return device
 
   def update(self) -> DeviceResponse:
@@ -23,6 +22,6 @@ class DeviceService:
       pass
 
 
-  def delete(self) -> None:
+  def delete(self, id: int) -> Boolean:
       """Delete user device information"""
-      pass
+      return self.repository.delete(id)
