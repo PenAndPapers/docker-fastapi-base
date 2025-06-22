@@ -9,10 +9,13 @@ from app.database import Base
 # Add the app directory to the Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../.."))
 
-# Import your models here
-from app.modules.todo.model import Todo
-from app.modules._user.model import UserModel
-from app.modules._auth.model import AuthDeviceModel, AuthOneTimePinModel, AuthTokenModel
+# Import your models here and add lint ignore
+from app.modules.todo.model import Todo # noqa: F401
+from app.modules.device.model import DeviceModel # noqa: F401
+from app.modules.one_time_pin.model import OneTimePinModel # noqa: F401
+from app.modules.token.model import TokenModel # noqa: F401
+from app.modules.user.model import UserModel # noqa: F401
+
 
 # this is the Alembic Config object
 config = context.config

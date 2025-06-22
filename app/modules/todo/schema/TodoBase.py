@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from ..constants import (
     TodoSeverityEnum,
     TodoStatusEnum,
@@ -33,7 +33,7 @@ class TodoBase(TodoSchemaBase):
         description="The status of the todo",
     )
 
-    @validator("title")
+    @field_validator("title")
     def title_must_be_valid(cls, title: str):
         title = title.strip()
         if not title:
