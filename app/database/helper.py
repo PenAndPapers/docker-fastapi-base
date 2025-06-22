@@ -27,7 +27,7 @@ class DatabaseRepository:
         except Exception as e:
             raise DatabaseError(detail=f"Error: {e}")
 
-    def _get_filtered_query(self, filters: dict) -> Query:
+    def _build_query(self, filters: dict) -> Query:
         """
         Build a filtered query based on filter criteria
 
@@ -56,7 +56,7 @@ class DatabaseRepository:
             DatabaseError: If there is an error querying the database
         """
         try:
-            return self._get_filtered_query(filters).all()
+            return self._build_query(filters).all()
         except Exception as e:
             raise DatabaseError(detail=f"Error: {e}")
 
@@ -74,11 +74,11 @@ class DatabaseRepository:
             DatabaseError: If there is an error querying the database
         """
         try:
-            return self._get_filtered_query(filters).first()
+            return self._build_query(filters).first()
         except Exception as e:
             raise DatabaseError(detail=f"Error: {e}")
 
-    def get_one(self, id: int) -> ModelType:
+    def get_one(self, id: int) -> ModelType | None:
         """
         Get one record by id.
         Using filter() instead of get() for future RLS compatibility.
@@ -95,15 +95,7 @@ class DatabaseRepository:
         """
         try:
             record = self.db.query(self.model).filter(self.model.id == id).first()
-
-            if record is None:
-                raise NotFoundError(
-                    detail=f"Record with id {id} not found in {self.model.__name__}"
-                )
-
             return record
-        except NotFoundError:
-            raise
         except Exception as e:
             raise DatabaseError(detail=f"Error: {e}")
 
@@ -172,12 +164,7 @@ class DatabaseRepository:
         Example: update_by_filter({"user_id": 1, "code": "123456"}, update_data)
         """
         try:
-            # Get the record using filters
-            query = self.query()
-            for field, value in filters.items():
-                query = query.filter(getattr(self.model, field) == value)
-
-            record = query.first()
+            record = self._build_query(filters).first()
             if not record:
                 raise NotFoundError(detail="Record not found with given filters")
 
@@ -214,7 +201,7 @@ class DatabaseRepository:
         """
         try:
             # Get all matching records
-            records = self._get_filtered_query(filters).all()
+            records = self._build_query(filters).all()
             
             # Prepare update data
             update_data = data.model_dump(exclude_unset=True)
@@ -257,11 +244,7 @@ class DatabaseRepository:
         Example: delete_by_filter({"user_id": 1, "status": "active"})
         """
         try:
-            query = self.query()
-            for field, value in filters.items():
-                query = query.filter(getattr(self.model, field) == value)
-
-            items = query.all()
+            items = self._build_query(filters).all()
             for item in items:
                 self.db.delete(item)
 
