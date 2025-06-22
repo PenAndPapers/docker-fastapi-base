@@ -11,8 +11,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../../.."))
 
 # Import your models here
 from app.modules.todo.model import Todo
-from app.modules.user.model import UserModel
-from app.modules.auth.model import AuthDeviceModel, AuthOneTimePinModel, AuthTokenModel
+from app.modules._user.model import UserModel
+from app.modules._auth.model import AuthDeviceModel, AuthOneTimePinModel, AuthTokenModel
 
 # this is the Alembic Config object
 config = context.config

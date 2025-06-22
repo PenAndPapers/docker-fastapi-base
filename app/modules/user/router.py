@@ -1,41 +1,41 @@
 from typing import List
 from fastapi import APIRouter, Depends
-from .schema import UserCreateRequest, UserUpdateRequest, UserResponse
-from .service import UserService
-from .providers import get_user_service
 
 router = APIRouter(prefix="/user", tags=["User"])
 
+# TODO: IMPLEMENT THIS ENDPOINT
 
-# TODO check if user is authenticated
-@router.post("", response_model=UserResponse)
-def create(data: UserCreateRequest, service: UserService = Depends(get_user_service)):
+@router.get("/all", response_model=None)
+def get_users() -> None:
+    """
+    Get all users
+    """
     pass
 
-
-# TODO check if user is authenticated
-@router.get("/all", response_model=List[UserResponse])
-def get_all(service: UserService = Depends(get_user_service)):
+@router.post("/", response_model=None)
+def create_user() -> None:
+    """
+    Create user
+    """
     pass
 
-
-# TODO check if user is authenticated
-@router.get("/{id}", response_model=UserResponse)
-def get_by_id(id: int, service: UserService = Depends(get_user_service)):
+@router.get("/", response_model=None)
+def get_user() -> None:
+    """
+    Get user
+    """
     pass
 
-
-# TODO check if user is authenticated
-@router.patch("/{id}", response_model=UserResponse)
-def update(
-    id: int,
-    data: UserUpdateRequest,
-    service: UserService = Depends(get_user_service),
-):
+@router.patch("/", response_model=None)
+def update_user() -> None:
+    """
+    Update user
+    """
     pass
 
-
-# TODO check if user is authenticated
-@router.delete("/{id}")
-def delete(id: int, service: UserService = Depends(get_user_service)):
+@router.delete("/", response_model=None)
+def delete_user() -> None:
+    """
+    Delete user
+    """
     pass

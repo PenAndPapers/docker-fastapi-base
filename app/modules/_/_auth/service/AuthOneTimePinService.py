@@ -120,6 +120,9 @@ class AuthOneTimePinService:
                 deleted_at=current_time,
             )
         )
+        print("\n\n\n\n\n")
+        print(user.id)
+        print("\n\n\n\n\n")
 
         # Generate new token with verified status
         new_token = self.token_service.create(user.id, user.uuid, data.access_token, True)

@@ -15,6 +15,9 @@ class UserRepository:
     def get_by_id(self, id: int):
         pass
 
+    def get_by_filter(self, filter: dict):
+        pass
+
     def update(self, _user: UserModel):
         pass
 

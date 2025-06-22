@@ -89,7 +89,6 @@ class AuthUserRepository:
         Returns:
             UserResponse: User data
         """
-        user = self.user_repository.get_by_filter(filter_dict)
         return UserResponse(**vars(user))
 
 

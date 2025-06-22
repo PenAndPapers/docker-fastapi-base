@@ -39,7 +39,7 @@ class AuthTokenRepository:
         Returns:
             Token: Token data
         """
-        token = self.token_repository.get_by_filter(filter_dict)
+        token = self.token_repository.get_one_by_filter(filter_dict)
         return Token.model_validate(token)
 
 

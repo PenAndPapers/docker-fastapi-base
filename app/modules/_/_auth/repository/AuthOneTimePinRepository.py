@@ -38,9 +38,9 @@ class AuthOneTimePinRepository:
         Returns:
             VerificationResponse: One time pin response
         """
-        otp = self.one_time_pin_repository.get_by_filter(filter_dict)
+        otp = self.one_time_pin_repository.get_one_by_filter(filter_dict)
 
-        return VerificationResponse(**vars(otp)) if otp else None
+        return VerificationResponse(**vars(otp))
 
 
     def update(self, otp_data: VerificationUpdateRequest) -> VerificationResponse:
