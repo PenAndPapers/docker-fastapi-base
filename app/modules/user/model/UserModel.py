@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, text
 from uuid import uuid4
+from datetime import datetime
 from app.database import Base
 
 
@@ -18,15 +19,7 @@ class UserModel(Base):
     address = Column(String, nullable=True)
     role = Column(String, nullable=True, server_default="user")
     status = Column(String, nullable=True, server_default="offline")
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=text("CURRENT_TIMESTAMP"),
-        nullable=False,
-    )
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=text("CURRENT_TIMESTAMP"),
-        nullable=False,
-    )
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     verified_at = Column(DateTime(timezone=True), nullable=True)
     deleted_at = Column(DateTime(timezone=True), nullable=True)

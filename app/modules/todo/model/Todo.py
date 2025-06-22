@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Enum, DateTime, text
+from datetime import datetime
 from app.database import Base
 from ..constants import TodoSeverityEnum, TodoStatusEnum
 
@@ -19,15 +20,6 @@ class Todo(Base):
         nullable=False,
         server_default=TodoStatusEnum.TODO.name,
     )
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=text("CURRENT_TIMESTAMP"),
-        nullable=False,
-    )
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=text("CURRENT_TIMESTAMP"),
-        onupdate=text("CURRENT_TIMESTAMP"),
-        nullable=False,
-    )
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
