@@ -12,10 +12,11 @@ class DeviceService:
       return stored_device
 
 
-  def get(self) -> DeviceResponse:
+  def get(self, id: int) -> DeviceResponse:
       """Get user device information"""
-      pass
-
+      device = self.repository.get(id)
+      
+      return device
 
   def update(self) -> DeviceResponse:
       """Update user device information"""

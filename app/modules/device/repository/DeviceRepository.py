@@ -16,10 +16,11 @@ class DeviceRepository:
         return DeviceResponse.model_validate(device)
 
 
-    def get(self):
+    def get(self, id: int) -> DeviceResponse:
         """Get device info"""
-        pass
-
+        device = self.device_repository.get_one(id)
+        return DeviceResponse.model_validate(device)
+        
 
     def update(self):
         """Update device info"""

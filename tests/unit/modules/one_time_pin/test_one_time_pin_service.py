@@ -80,3 +80,20 @@ def test_create(device_service, mock_repository, device_response_data, create_re
 
     #compare dictionaries
     assert dump_data(result_dict) == dump_data(create_data_dict)
+
+
+def test_get_by_id(device_service, mock_repository, device_response_data):
+    # mock repository return value
+    mock_repository.get.return_value = device_response_data
+    
+    # call the service method
+    result = device_service.get(1)
+
+    mock_repository.get.assert_called_once()
+    
+    # check id
+    assert result.id == 1
+    assert result.user_id == 1
+    assert result.device_id == "d4f16c9a-0fb6-4a8b-a67e-46c11e51e8b1"
+    assert result.client_info == "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+
