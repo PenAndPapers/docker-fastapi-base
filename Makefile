@@ -1,5 +1,7 @@
 .PHONY: docker-up docker-down docker-build docker-logs docker-ps test lint clean install test-all test-cov test-watch test-unit test-integration test-e2e format up-foreground up-background migration migrate-down migrate-logs migrate-check down down-v scaffold-module
 
+PROJECT_NAME := docker-fastapi-base
+
 # Development commands (local machine)
 install:
 	pip install uv
@@ -26,7 +28,7 @@ docker-down:
 	docker-compose down --remove-orphans
 
 docker-down-v:
-	docker-compose down -v --remove-orphans
+	docker-compose -p $(PROJECT_NAME) down -v --remove-orphans
 
 docker-restart:
 	$(MAKE) docker-down
